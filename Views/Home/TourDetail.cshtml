@@ -32,7 +32,6 @@
                     <!-- Tour Image -->
                     <div class="tour-detail-image">
                         <img src="@Model.getImageUrl()" alt="@Model.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/900x500'">
-
                         @if (Model.getAvailableSlots() <= 5 && Model.getAvailableSlots() > 0)
                         {
                             <div class="image-badge badge-warning">
@@ -68,7 +67,6 @@
                             }
                         </div>
                         <h1 class="tour-title">@Model.getName()</h1>
-
                         <div class="tour-meta">
                             <div class="meta-item">
                                 <i class="far fa-calendar-alt"></i>
