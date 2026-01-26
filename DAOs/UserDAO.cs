@@ -13,23 +13,23 @@ namespace TourBookingSystem.DAOs
      */
     public class UserDAO
     {
-        private static readonly string TABLE_NAME = "users";
-        
+        private static readonly string TABLE_NAME = "[users]";
+
         /**
          * Custom exception for database operations
          */
         public class UserDAOException : Exception
         {
             private readonly string operation;
-            
+
             public UserDAOException(string operation, string message, Exception cause) : base(message, cause)
             {
                 this.operation = operation;
             }
-            
+
             public string getOperation() { return operation; }
         }
-        
+
         /**
          * Register a new user with password hashing
          * @param user the user object (without password set)
@@ -40,14 +40,14 @@ namespace TourBookingSystem.DAOs
         {
             // Hash the password
             string hashedPassword = hashPassword(plainPassword);
-            
+
             // Set the hashed password on user object
             user.setPassword(hashedPassword);
-            
+
             // Insert user into database
             return insert(user);
         }
-        
+
         /**
          * Hash password
          * @param plainPassword the plain text password
@@ -64,7 +64,7 @@ namespace TourBookingSystem.DAOs
                 throw new UserDAOException("hashPassword", "Error hashing password", e);
             }
         }
-        
+
         /**
          * Find user by ID
          * @param id the user ID
@@ -73,13 +73,13 @@ namespace TourBookingSystem.DAOs
         public User findById(int id)
         {
             string sql = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     stmt.Parameters.AddWithValue("?", id);
-                    
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         if (rs.Read())
@@ -89,10 +89,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return null;
         }
-        
+
         /**
          * Find user by email
          * @param email the email to search
@@ -101,17 +101,17 @@ namespace TourBookingSystem.DAOs
         public User findByEmail(string email)
         {
             string sql = "SELECT * FROM " + TABLE_NAME + " WHERE email = ?";
-            
+
             Console.WriteLine("=== USERDAO FIND BY EMAIL ===");
             Console.WriteLine("Searching for email: " + email.ToLower().Trim());
             Console.WriteLine("Database URL: " + DBConnection.getDatabaseUrl());
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     stmt.Parameters.AddWithValue("?", email.ToLower().Trim());
-                    
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         if (rs.Read())
@@ -126,10 +126,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return null;
         }
-        
+
         /**
          * Verify user login credentials
          * @param email user email
@@ -141,26 +141,26 @@ namespace TourBookingSystem.DAOs
             Console.WriteLine("=== USERDAO VERIFY LOGIN ===");
             Console.WriteLine("Email: " + email);
             Console.WriteLine("Database URL: " + DBConnection.getDatabaseUrl());
-            
+
             string sql = "SELECT * FROM " + TABLE_NAME + " WHERE email = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     stmt.Parameters.AddWithValue("?", email.ToLower().Trim());
-                    
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         if (rs.Read())
                         {
                             User user = mapResultSetToUser(rs);
-                            
+
                             // Get stored password hash
                             string storedHash = rs["password_hash"].ToString();
                             Console.WriteLine("Found user: " + user.getEmail());
                             Console.WriteLine("Stored hash: " + (storedHash != null ? storedHash.Substring(0, Math.Min(10, storedHash.Length)) + "..." : "NULL"));
-                            
+
                             // Verify password
                             if (checkPassword(password, storedHash))
                             {
@@ -179,10 +179,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return null;
         }
-        
+
         /**
          * Check if password matches hashed password
          * @param plainPassword the plain text password
@@ -200,7 +200,7 @@ namespace TourBookingSystem.DAOs
                 return false;
             }
         }
-        
+
         /**
          * Get all users
          * @return list of all users
@@ -209,7 +209,7 @@ namespace TourBookingSystem.DAOs
         {
             string sql = "SELECT * FROM " + TABLE_NAME + " ORDER BY id DESC";
             List<User> users = new List<User>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -221,10 +221,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return users;
         }
-        
+
         /**
          * Get users by role
          * @param role the role to filter (ADMIN, USER)
@@ -234,13 +234,13 @@ namespace TourBookingSystem.DAOs
         {
             string sql = "SELECT * FROM " + TABLE_NAME + " WHERE role = ? ORDER BY id DESC";
             List<User> users = new List<User>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     stmt.Parameters.AddWithValue("?", role);
-                    
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -250,10 +250,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return users;
         }
-        
+
         /**
          * Filter users by role AND search by keyword (name or email)
          * @param role the role to filter (ADMIN, USER)
@@ -262,11 +262,11 @@ namespace TourBookingSystem.DAOs
          */
         public List<User> filterUsersByRoleAndSearch(string role, string keyword)
         {
-            string sql = "SELECT * FROM " + TABLE_NAME + 
+            string sql = "SELECT * FROM " + TABLE_NAME +
                          " WHERE role = ? AND (full_name LIKE ? OR email LIKE ?) " +
                          "ORDER BY id DESC";
             List<User> users = new List<User>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -275,7 +275,7 @@ namespace TourBookingSystem.DAOs
                     string searchPattern = "%" + keyword + "%";
                     stmt.Parameters.AddWithValue("?", searchPattern);
                     stmt.Parameters.AddWithValue("?", searchPattern);
-                    
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -285,10 +285,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return users;
         }
-        
+
         /**
          * Insert a new user
          * @param user the user to insert (password should already be hashed)
@@ -296,39 +296,58 @@ namespace TourBookingSystem.DAOs
          */
         public bool insert(User user)
         {
-            string sql = "INSERT INTO " + TABLE_NAME + 
+            string sql = "INSERT INTO " + TABLE_NAME +
                          " (email, password_hash, full_name, phone, role, created_at, remember_token, token_expiry) " +
                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            
+
             Console.WriteLine("=== USERDAO INSERT DEBUG ===");
             Console.WriteLine("Database URL: " + DBConnection.getDatabaseUrl());
             Console.WriteLine("UserDAO.insert - Email: " + user.getEmail());
             Console.WriteLine("UserDAO.insert - Password hash: " + (user.getHashedPassword() != null ? user.getHashedPassword().Substring(0, Math.Min(10, user.getHashedPassword().Length)) + "..." : "NULL"));
             Console.WriteLine("UserDAO.insert - FullName: " + user.getFullName());
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", user.getEmail().ToLower().Trim());
-                    stmt.Parameters.AddWithValue("?", user.getHashedPassword());
-                    stmt.Parameters.AddWithValue("?", sanitizeString(user.getFullName()));
-                    stmt.Parameters.AddWithValue("?", sanitizeString(user.getPhone()));
-                    stmt.Parameters.AddWithValue("?", user.getRole() != null ? user.getRole() : "USER");
-                    stmt.Parameters.AddWithValue("?", DateTime.Now);
-                    stmt.Parameters.AddWithValue("?", DBNull.Value);
-                    stmt.Parameters.AddWithValue("?", DBNull.Value);
-                    
+                    // Use explicit OleDbParameter with types to avoid type mismatch
+                    // AddWithValue infers DBNull.Value as VarWChar, causing errors with Date columns
+
+                    var p1 = new OleDbParameter("?", OleDbType.VarWChar, 100) { Value = user.getEmail().ToLower().Trim() };
+                    var p2 = new OleDbParameter("?", OleDbType.VarWChar, 255) { Value = user.getHashedPassword() };
+                    var p3 = new OleDbParameter("?", OleDbType.VarWChar, 100) { Value = sanitizeString(user.getFullName()) };
+
+                    // Handle phone number: if empty, send DBNull.Value
+                    string phone = sanitizeString(user.getPhone());
+                    var p4 = new OleDbParameter("?", OleDbType.VarWChar, 20)
+                    {
+                        Value = string.IsNullOrEmpty(phone) ? DBNull.Value : phone
+                    };
+
+                    var p5 = new OleDbParameter("?", OleDbType.VarWChar, 20) { Value = user.getRole() != null ? user.getRole() : "USER" };
+                    var p6 = new OleDbParameter("?", OleDbType.Date) { Value = DateTime.Now };
+                    var p7 = new OleDbParameter("?", OleDbType.VarWChar, 255) { Value = DBNull.Value };
+                    var p8 = new OleDbParameter("?", OleDbType.Date) { Value = DBNull.Value };
+
+                    stmt.Parameters.Add(p1);
+                    stmt.Parameters.Add(p2);
+                    stmt.Parameters.Add(p3);
+                    stmt.Parameters.Add(p4);
+                    stmt.Parameters.Add(p5);
+                    stmt.Parameters.Add(p6);
+                    stmt.Parameters.Add(p7);
+                    stmt.Parameters.Add(p8);
+
                     Console.WriteLine("Executing insert...");
                     int rowsAffected = stmt.ExecuteNonQuery();
                     Console.WriteLine("Rows affected: " + rowsAffected);
-                    
+
                     Console.WriteLine("=== INSERT SUCCESS ===");
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Update user
          * @param user the user to update
@@ -336,9 +355,9 @@ namespace TourBookingSystem.DAOs
          */
         public bool update(User user)
         {
-            string sql = "UPDATE " + TABLE_NAME + 
+            string sql = "UPDATE " + TABLE_NAME +
                          " SET full_name = ?, phone = ?, role = ? WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -347,13 +366,13 @@ namespace TourBookingSystem.DAOs
                     stmt.Parameters.AddWithValue("?", sanitizeString(user.getPhone()));
                     stmt.Parameters.AddWithValue("?", user.getRole());
                     stmt.Parameters.AddWithValue("?", user.getUserId());
-                    
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Update user password
          * @param userId the user ID
@@ -363,22 +382,22 @@ namespace TourBookingSystem.DAOs
         public bool updatePassword(int userId, string newPlainPassword)
         {
             string hashedPassword = hashPassword(newPlainPassword);
-            
+
             string sql = "UPDATE " + TABLE_NAME + " SET password_hash = ? WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     stmt.Parameters.AddWithValue("?", hashedPassword);
                     stmt.Parameters.AddWithValue("?", userId);
-                    
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Update user role
          * @param userId the user ID
@@ -388,20 +407,20 @@ namespace TourBookingSystem.DAOs
         public bool updateRole(int userId, string role)
         {
             string sql = "UPDATE " + TABLE_NAME + " SET role = ? WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     stmt.Parameters.AddWithValue("?", role);
                     stmt.Parameters.AddWithValue("?", userId);
-                    
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Delete user by ID
          * @param userId the user ID to delete
@@ -410,19 +429,19 @@ namespace TourBookingSystem.DAOs
         public bool delete(int userId)
         {
             string sql = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     stmt.Parameters.AddWithValue("?", userId);
-                    
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Check if email already exists
          * @param email the email to check
@@ -431,13 +450,13 @@ namespace TourBookingSystem.DAOs
         public bool emailExists(string email)
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE email = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     stmt.Parameters.AddWithValue("?", email.ToLower().Trim());
-                    
+
                     object result = stmt.ExecuteScalar();
                     if (result != null)
                     {
@@ -445,10 +464,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return false;
         }
-        
+
         /**
          * Get user count by role
          * @param role the role to count
@@ -457,13 +476,13 @@ namespace TourBookingSystem.DAOs
         public int countByRole(string role)
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE role = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     stmt.Parameters.AddWithValue("?", role);
-                    
+
                     object result = stmt.ExecuteScalar();
                     if (result != null)
                     {
@@ -471,10 +490,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
-        
+
         /**
          * Get total user count
          * @return total number of users
@@ -482,7 +501,7 @@ namespace TourBookingSystem.DAOs
         public int getTotalCount()
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME;
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -494,10 +513,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
-        
+
         /**
          * Search users by name or email
          * @param keyword the search keyword
@@ -505,11 +524,11 @@ namespace TourBookingSystem.DAOs
          */
         public List<User> searchUsers(string keyword)
         {
-            string sql = "SELECT * FROM " + TABLE_NAME + 
+            string sql = "SELECT * FROM " + TABLE_NAME +
                          " WHERE full_name LIKE ? OR email LIKE ? " +
                          "ORDER BY id DESC";
             List<User> users = new List<User>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -517,7 +536,7 @@ namespace TourBookingSystem.DAOs
                     string searchPattern = "%" + keyword + "%";
                     stmt.Parameters.AddWithValue("?", searchPattern);
                     stmt.Parameters.AddWithValue("?", searchPattern);
-                    
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -527,10 +546,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return users;
         }
-        
+
         /**
          * Map ResultSet to User object
          */
@@ -539,18 +558,18 @@ namespace TourBookingSystem.DAOs
             User user = new User();
             user.setUserId(Convert.ToInt32(rs["id"]));
             user.setEmail(rs["email"].ToString());
-            
+
             // For security, don't return the actual password hash
             // The setPassword with null ensures getPassword() returns null
             user.setPassword(null);
-            
+
             user.setFullName(rs["full_name"].ToString());
-            
+
             string phone = rs["phone"] != DBNull.Value ? rs["phone"].ToString() : null;
             user.setPhone(phone != null ? phone : "");
-            
+
             user.setRole(rs["role"].ToString());
-            
+
             if (rs["created_at"] != DBNull.Value)
             {
                 user.setCreatedAt(Convert.ToDateTime(rs["created_at"]).ToString());
@@ -559,10 +578,10 @@ namespace TourBookingSystem.DAOs
             {
                 user.setCreatedAt("");
             }
-            
+
             // Map remember_token and token_expiry
             user.setRememberToken(rs["remember_token"] != DBNull.Value ? rs["remember_token"].ToString() : null);
-            
+
             if (rs["token_expiry"] != DBNull.Value)
             {
                 user.setTokenExpiry(Convert.ToDateTime(rs["token_expiry"]).ToString());
@@ -571,10 +590,10 @@ namespace TourBookingSystem.DAOs
             {
                 user.setTokenExpiry(null);
             }
-            
+
             return user;
         }
-        
+
         /**
          * Update user remember token
          * @param userId the user ID
@@ -585,21 +604,25 @@ namespace TourBookingSystem.DAOs
         public bool updateRememberToken(int userId, string token, DateTime expiryDate)
         {
             string sql = "UPDATE " + TABLE_NAME + " SET remember_token = ?, token_expiry = ? WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", token);
-                    stmt.Parameters.AddWithValue("?", expiryDate);
-                    stmt.Parameters.AddWithValue("?", userId);
-                    
+                    var p1 = new OleDbParameter("?", OleDbType.VarWChar, 255) { Value = token };
+                    var p2 = new OleDbParameter("?", OleDbType.Date) { Value = expiryDate };
+                    var p3 = new OleDbParameter("?", OleDbType.Integer) { Value = userId };
+
+                    stmt.Parameters.Add(p1);
+                    stmt.Parameters.Add(p2);
+                    stmt.Parameters.Add(p3);
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Clear user remember token (logout)
          * @param userId the user ID
@@ -608,19 +631,19 @@ namespace TourBookingSystem.DAOs
         public bool clearRememberToken(int userId)
         {
             string sql = "UPDATE " + TABLE_NAME + " SET remember_token = NULL, token_expiry = NULL WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     stmt.Parameters.AddWithValue("?", userId);
-                    
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Find user by remember token
          * @param token the remember token
@@ -629,14 +652,17 @@ namespace TourBookingSystem.DAOs
         public User findByRememberToken(string token)
         {
             string sql = "SELECT * FROM " + TABLE_NAME + " WHERE remember_token = ? AND token_expiry > ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", token);
-                    stmt.Parameters.AddWithValue("?", DateTime.Now);
-                    
+                    var p1 = new OleDbParameter("?", OleDbType.VarWChar, 255) { Value = token };
+                    var p2 = new OleDbParameter("?", OleDbType.Date) { Value = DateTime.Now };
+
+                    stmt.Parameters.Add(p1);
+                    stmt.Parameters.Add(p2);
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         if (rs.Read())
@@ -646,10 +672,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return null;
         }
-        
+
         /**
          * Sanitize string for database queries
          */

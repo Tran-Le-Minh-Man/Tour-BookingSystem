@@ -320,7 +320,8 @@ namespace TourBookingSystem.Controllers
             catch (Exception e)
             {
                 Console.WriteLine("Registration error: " + e.Message);
-                ViewData["error"] = "Có lỗi xảy ra. Vui lòng thử lại sau.";
+                ViewData["error"] = "Lỗi chi tiết: " + e.Message;
+
                 ViewData["fullName"] = fullName;
                 ViewData["email"] = email;
                 ViewData["phone"] = phone;
