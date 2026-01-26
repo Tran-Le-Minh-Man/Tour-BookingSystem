@@ -1,0 +1,45 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="login-container">
+    <div class="login-box">
+        <h2>Đăng nhập</h2>
+        
+        @if (ViewData["error"] != null)
+        {
+            <div class="alert alert-danger">@ViewData["error"]</div>
+        }
+        
+        @if (ViewData["success"] != null)
+        {
+            <div class="alert alert-success">@ViewData["success"]</div>
+        }
+        
+        <form action="@Url.Action("Login", "Account")" method="post">
+            <input type="hidden" name="_csrf_token" value="@ViewData["_csrf_token"]" />
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="@ViewData["email"]" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Mật khẩu</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <div class="form-group checkbox">
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember">Ghi nhớ đăng nhập</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Đăng nhập</button>
+        </form>
+        
+        <div class="login-footer">
+            <p>Chưa có tài khoản? <a href="@Url.Action("Register", "Account")">Đăng ký ngay</a></p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,144 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Đặt tour của tôi";
+    var bookings = ViewData["bookings"] as List<TourBookingSystem.Models.Booking>;
+    var pendingBookings = ViewData["pendingBookings"] as List<TourBookingSystem.Models.Booking>;
+    var confirmedBookings = ViewData["confirmedBookings"] as List<TourBookingSystem.Models.Booking>;
+    var totalBookings = (int?)ViewData["totalBookings"] ?? 0;
+}
+
+<div class="booking-page">
+    <div class="page-header">
+        <h1>Đặt tour của tôi</h1>
+        <p>Tổng số đơn: @totalBookings</p>
+    </div>
+    
+    @if (TempData["success"] != null)
+    {
+        <div class="alert alert-success">@TempData["success"]</div>
+    }
+    
+    @if (TempData["error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["error"]</div>
+    }
+    
+    <div class="booking-tabs">
+        <button class="tab-btn active" onclick="showTab('all')">Tất cả (@totalBookings)</button>
+        <button class="tab-btn" onclick="showTab('pending')">Chờ xác nhận (@(pendingBookings?.Count ?? 0))</button>
+        <button class="tab-btn" onclick="showTab('confirmed')">Đã xác nhận (@(confirmedBookings?.Count ?? 0))</button>
+    </div>
+    
+    <div class="booking-list">
+        @if (bookings != null && bookings.Count > 0)
+        {
+            foreach (var booking in bookings)
+            {
+                <div class="booking-card tab-content @(booking.getStatus().ToLower())" data-status="@booking.getStatus().ToLower()">
+                    <div class="booking-header">
+                        <span class="booking-id">Mã đặt: #@booking.getBookingId()</span>
+                        <span class="booking-status @booking.getStatus().ToLower()">@booking.getFormattedStatus()</span>
+                    </div>
+                    <div class="booking-body">
+                        <div class="tour-info">
+                            <h3>@booking.getTourName()</h3>
+                            <p>📍 @booking.getTourDestination()</p>
+                            <p>📅 Ngày khởi hành: @booking.getTourDeparture()</p>
+                            <p>⏱ Thời gian: @booking.getTourDuration() ngày</p>
+                        </div>
+                        <div class="booking-details">
+                            <p>📆 Ngày đặt: @booking.getFormattedDate()</p>
+                            <p>👥 Số người: @booking.getNumParticipants()</p>
+                            <p class="total-price">💰 Tổng tiền: @booking.getFormattedPrice()</p>
+                        </div>
+                    </div>
+                    <div class="booking-footer">
+                        @if ("PENDING".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
+                        {
+                            <a href="@Url.Action("Index", "Booking", new { action = "cancel", bookingId = booking.getBookingId() })" 
+                               class="btn btn-danger"
+                               onclick="return confirm('Bạn có chắc muốn hủy đơn này?');">Hủy đặt tour</a>
+                        }
+                        @if ("CONFIRMED".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="confirmed-info">Tour đã được xác nhận. Chúc bạn có một chuyến đi vui vẻ!</span>
+                        }
+                        @if ("CANCELLED".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="cancelled-info">Đơn đã bị hủy</span>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-bookings">
+                <p>Bạn chưa có đơn đặt tour nào</p>
+                <a href="@Url.Action("TourList", "Home")" class="btn btn-primary">Xem tour ngay</a>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .booking-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .tab-btn {
+        padding: 10px 20px;
+        border: none;
+        background: #f0f0f0;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    
+    .tab-btn.active {
+        background: #007bff;
+        color: white;
+    }
+    
+    .booking-card.pending {
+        border-left: 4px solid #ffc107;
+    }
+    
+    .booking-card.confirmed {
+        border-left: 4px solid #28a745;
+    }
+    
+    .booking-card.cancelled {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .booking-status.pending {
+        color: #ffc107;
+    }
+    
+    .booking-status.confirmed {
+        color: #28a745;
+    }
+    
+    .booking-status.cancelled {
+        color: #dc3545;
+    }
+</style>
+
+<script>
+    function showTab(status) {
+        // Update active tab
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Filter bookings
+        document.querySelectorAll('.booking-card').forEach(card => {
+            if (status === 'all' || card.dataset.status === status) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>

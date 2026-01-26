@@ -1,0 +1,591 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
+using TourBookingSystem.Models;
+using TourBookingSystem.Utils;
+
+namespace TourBookingSystem.DAOs
+{
+    /**
+     * Data Access Object for Tour entity
+     */
+    public class TourDAO
+    {
+        private static readonly string TABLE_NAME = "tours";
+        
+        /**
+         * Custom exception for database operations
+         */
+        public class TourDAOException : Exception
+        {
+            private readonly string operation;
+            
+            public TourDAOException(string operation, string message, Exception cause) : base(message, cause)
+            {
+                this.operation = operation;
+            }
+            
+            public string getOperation() { return operation; }
+        }
+        
+        /**
+         * Get all tours
+         * @return list of all tours
+         */
+        public List<Tour> getAllTours()
+        {
+            string sql = "SELECT * FROM " + TABLE_NAME + " ORDER BY id DESC";
+            List<Tour> tours = new List<Tour>();
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                using (OleDbDataReader rs = stmt.ExecuteReader())
+                {
+                    while (rs.Read())
+                    {
+                        tours.Add(mapResultSetToTour(rs));
+                    }
+                }
+            }
+            
+            return tours;
+        }
+        
+        /**
+         * Get tours by status
+         * @param status the status to filter (ACTIVE, INACTIVE)
+         * @return list of tours with specified status
+         */
+        public List<Tour> getToursByStatus(string status)
+        {
+            string sql = "SELECT * FROM " + TABLE_NAME + " WHERE status = ? ORDER BY id DESC";
+            List<Tour> tours = new List<Tour>();
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    stmt.Parameters.AddWithValue("?", status);
+                    
+                    using (OleDbDataReader rs = stmt.ExecuteReader())
+                    {
+                        while (rs.Read())
+                        {
+                            tours.Add(mapResultSetToTour(rs));
+                        }
+                    }
+                }
+            }
+            
+            return tours;
+        }
+        
+        /**
+         * Get active tours for customers
+         * @return list of active tours
+         */
+        public List<Tour> getActiveTours()
+        {
+            return getToursByStatus("ACTIVE");
+        }
+        
+        /**
+         * Find tour by ID
+         * @param id the tour ID
+         * @return Tour object if found, null otherwise
+         */
+        public Tour findById(int id)
+        {
+            string sql = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    stmt.Parameters.AddWithValue("?", id);
+                    
+                    using (OleDbDataReader rs = stmt.ExecuteReader())
+                    {
+                        if (rs.Read())
+                        {
+                            return mapResultSetToTour(rs);
+                        }
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        /**
+         * Search tours by name or destination
+         * @param keyword the search keyword
+         * @return list of matching tours
+         */
+        public List<Tour> searchTours(string keyword)
+        {
+            string sql = "SELECT * FROM " + TABLE_NAME + 
+                         " WHERE name LIKE ? OR destination LIKE ? " +
+                         "ORDER BY id DESC";
+            List<Tour> tours = new List<Tour>();
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    string searchPattern = "%" + keyword + "%";
+                    stmt.Parameters.AddWithValue("?", searchPattern);
+                    stmt.Parameters.AddWithValue("?", searchPattern);
+                    
+                    using (OleDbDataReader rs = stmt.ExecuteReader())
+                    {
+                        while (rs.Read())
+                        {
+                            tours.Add(mapResultSetToTour(rs));
+                        }
+                    }
+                }
+            }
+            
+            return tours;
+        }
+        
+        /**
+         * Insert a new tour
+         * @param tour the tour to insert
+         * @return true if insertion successful, false otherwise
+         */
+        public bool insert(Tour tour)
+        {
+            string sql = "INSERT INTO " + TABLE_NAME + 
+                         " (name, description, destination, departure_date, duration, price, " +
+                         "max_participants, current_participants, image_url, status) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getName()));
+                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getDescription()));
+                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getDestination()));
+                    
+                    if (tour.getDepartureDate() != null)
+                    {
+                        stmt.Parameters.AddWithValue("?", tour.getDepartureDate());
+                    }
+                    else
+                    {
+                        stmt.Parameters.AddWithValue("?", DBNull.Value);
+                    }
+                    
+                    stmt.Parameters.AddWithValue("?", tour.getDuration());
+                    stmt.Parameters.AddWithValue("?", tour.getPrice());
+                    stmt.Parameters.AddWithValue("?", tour.getMaxParticipants());
+                    stmt.Parameters.AddWithValue("?", tour.getCurrentParticipants());
+                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getImageUrl()));
+                    stmt.Parameters.AddWithValue("?", tour.getStatus() != null ? tour.getStatus() : "ACTIVE");
+                    
+                    int rowsAffected = stmt.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+        
+        /**
+         * Update an existing tour
+         * @param tour the tour to update
+         * @return true if update successful, false otherwise
+         */
+        public bool update(Tour tour)
+        {
+            string sql = "UPDATE " + TABLE_NAME + 
+                         " SET name = ?, description = ?, destination = ?, " +
+                         "departure_date = ?, duration = ?, price = ?, " +
+                         "max_participants = ?, current_participants = ?, " +
+                         "image_url = ?, status = ? WHERE id = ?";
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getName()));
+                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getDescription()));
+                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getDestination()));
+                    
+                    if (tour.getDepartureDate() != null)
+                    {
+                        stmt.Parameters.AddWithValue("?", tour.getDepartureDate());
+                    }
+                    else
+                    {
+                        stmt.Parameters.AddWithValue("?", DBNull.Value);
+                    }
+                    
+                    stmt.Parameters.AddWithValue("?", tour.getDuration());
+                    stmt.Parameters.AddWithValue("?", tour.getPrice());
+                    stmt.Parameters.AddWithValue("?", tour.getMaxParticipants());
+                    stmt.Parameters.AddWithValue("?", tour.getCurrentParticipants());
+                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getImageUrl()));
+                    stmt.Parameters.AddWithValue("?", tour.getStatus());
+                    stmt.Parameters.AddWithValue("?", tour.getTourId());
+                    
+                    int rowsAffected = stmt.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+        
+        /**
+         * Delete a tour by ID
+         * @param id the tour ID to delete
+         * @return true if deletion successful, false otherwise
+         */
+        public bool delete(int id)
+        {
+            string sql = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    stmt.Parameters.AddWithValue("?", id);
+                    
+                    int rowsAffected = stmt.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+        
+        /**
+         * Update tour status
+         * @param id the tour ID
+         * @param status the new status
+         * @return true if update successful
+         */
+        public bool updateStatus(int id, string status)
+        {
+            string sql = "UPDATE " + TABLE_NAME + " SET status = ? WHERE id = ?";
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    stmt.Parameters.AddWithValue("?", status);
+                    stmt.Parameters.AddWithValue("?", id);
+                    
+                    int rowsAffected = stmt.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+        
+        /**
+         * Get tour count by status
+         * @param status the status to count
+         * @return number of tours with specified status
+         */
+        public int countByStatus(string status)
+        {
+            string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE status = ?";
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    stmt.Parameters.AddWithValue("?", status);
+                    
+                    object result = stmt.ExecuteScalar();
+                    if (result != null)
+                    {
+                        return Convert.ToInt32(result);
+                    }
+                }
+            }
+            
+            return 0;
+        }
+        
+        /**
+         * Get total tour count
+         * @return total number of tours
+         */
+        public int getTotalCount()
+        {
+            string sql = "SELECT COUNT(*) FROM " + TABLE_NAME;
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    object result = stmt.ExecuteScalar();
+                    if (result != null)
+                    {
+                        return Convert.ToInt32(result);
+                    }
+                }
+            }
+            
+            return 0;
+        }
+        
+        /**
+         * Get filtered tours based on various criteria including keyword search
+         * @param keyword the keyword to search in tour name and description (null for all)
+         * @param destination the destination to filter (null for all)
+         * @param minPrice the minimum price (null for no minimum)
+         * @param maxPrice the maximum price (null for no maximum)
+         * @param duration the duration in days (null for all)
+         * @param departureDate the departure date to filter (null for all)
+         * @return list of filtered tours
+         */
+        public List<Tour> getFilteredTours(string keyword, string destination, string minPrice, 
+                                            string maxPrice, string duration, string departureDate)
+        {
+            List<string> conditions = new List<string>();
+            List<object> parameters = new List<object>();
+            
+            // Filter by keyword (search in name and description)
+            if (!string.IsNullOrEmpty(keyword) && !keyword.Trim().Equals(""))
+            {
+                conditions.Add("(name LIKE ? OR description LIKE ?)");
+                string searchPattern = "%" + keyword.Trim() + "%";
+                parameters.Add(searchPattern);
+                parameters.Add(searchPattern);
+            }
+            
+            // Filter by destination
+            if (!string.IsNullOrEmpty(destination) && !destination.Trim().Equals("") && !destination.Equals("all"))
+            {
+                conditions.Add("destination LIKE ?");
+                parameters.Add("%" + destination.Trim() + "%");
+            }
+            
+            // Filter by minimum price
+            if (!string.IsNullOrEmpty(minPrice) && !minPrice.Trim().Equals(""))
+            {
+                try
+                {
+                    double minPriceValue = double.Parse(minPrice.Trim());
+                    conditions.Add("price >= ?");
+                    parameters.Add(minPriceValue);
+                }
+                catch (FormatException)
+                {
+                    // Ignore invalid price values
+                }
+            }
+            
+            // Filter by maximum price
+            if (!string.IsNullOrEmpty(maxPrice) && !maxPrice.Trim().Equals(""))
+            {
+                try
+                {
+                    double maxPriceValue = double.Parse(maxPrice.Trim());
+                    conditions.Add("price <= ?");
+                    parameters.Add(maxPriceValue);
+                }
+                catch (FormatException)
+                {
+                    // Ignore invalid price values
+                }
+            }
+            
+            // Filter by duration
+            if (!string.IsNullOrEmpty(duration) && !duration.Trim().Equals("") && !duration.Equals("all"))
+            {
+                try
+                {
+                    int durationValue = int.Parse(duration.Trim());
+                    conditions.Add("duration = ?");
+                    parameters.Add(durationValue);
+                }
+                catch (FormatException)
+                {
+                    // Ignore invalid duration values
+                }
+            }
+            
+            // Filter by departure date
+            if (!string.IsNullOrEmpty(departureDate) && !departureDate.Trim().Equals(""))
+            {
+                try
+                {
+                    DateTime dateValue = DateTime.Parse(departureDate.Trim());
+                    conditions.Add("departure_date >= ?");
+                    parameters.Add(dateValue);
+                }
+                catch (FormatException)
+                {
+                    // Ignore invalid date format
+                }
+            }
+            
+            // Build SQL query
+            string sql = "SELECT * FROM " + TABLE_NAME;
+            if (conditions.Count > 0)
+            {
+                sql += " WHERE " + string.Join(" AND ", conditions);
+            }
+            sql += " AND status = 'ACTIVE' ORDER BY id DESC";
+            
+            List<Tour> tours = new List<Tour>();
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    for (int i = 0; i < parameters.Count; i++)
+                    {
+                        stmt.Parameters.AddWithValue("?", parameters[i]);
+                    }
+                    
+                    using (OleDbDataReader rs = stmt.ExecuteReader())
+                    {
+                        while (rs.Read())
+                        {
+                            tours.Add(mapResultSetToTour(rs));
+                        }
+                    }
+                }
+            }
+            
+            return tours;
+        }
+        
+        /**
+         * Get all unique destinations
+         * @return list of unique destination names
+         */
+        public List<string> getAllDestinations()
+        {
+            string sql = "SELECT DISTINCT destination FROM " + TABLE_NAME + " WHERE status = 'ACTIVE' ORDER BY destination";
+            List<string> destinations = new List<string>();
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                using (OleDbDataReader rs = stmt.ExecuteReader())
+                {
+                    while (rs.Read())
+                    {
+                        string dest = rs["destination"].ToString();
+                        if (!string.IsNullOrEmpty(dest) && !dest.Trim().Equals(""))
+                        {
+                            destinations.Add(dest.Trim());
+                        }
+                    }
+                }
+            }
+            
+            return destinations;
+        }
+        
+        /**
+         * Get random tours for featured section
+         * @param limit maximum number of tours to return
+         * @return list of random tours
+         */
+        public List<Tour> getRandomTours(int limit)
+        {
+            // Note: Access doesn't support ORDER BY RAND() like MySQL
+            // We'll get all active tours and shuffle in memory
+            List<Tour> allTours = getActiveTours();
+            
+            // Shuffle
+            var random = new Random();
+            int n = allTours.Count;
+            for (int i = n - 1; i > 0; i--)
+            {
+                int j = random.Next(i + 1);
+                var temp = allTours[i];
+                allTours[i] = allTours[j];
+                allTours[j] = temp;
+            }
+            
+            // Return limited results
+            return allTours.Take(limit).ToList();
+        }
+        
+        /**
+         * Get related tours by destination (excluding current tour)
+         * @param destination the destination to match
+         * @param currentTourId the current tour ID to exclude
+         * @param limit maximum number of related tours to return
+         * @return list of related tours
+         */
+        public List<Tour> getRelatedTours(string destination, int currentTourId, int limit)
+        {
+            if (string.IsNullOrEmpty(destination) || destination.Trim().Equals(""))
+            {
+                return new List<Tour>();
+            }
+            
+            string sql = "SELECT TOP " + limit + " * FROM " + TABLE_NAME + 
+                         " WHERE destination LIKE ? AND id <> ? AND status = 'ACTIVE' " +
+                         "ORDER BY id DESC";
+            List<Tour> tours = new List<Tour>();
+            
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    stmt.Parameters.AddWithValue("?", "%" + destination.Trim() + "%");
+                    stmt.Parameters.AddWithValue("?", currentTourId);
+                    
+                    using (OleDbDataReader rs = stmt.ExecuteReader())
+                    {
+                        while (rs.Read())
+                        {
+                            tours.Add(mapResultSetToTour(rs));
+                        }
+                    }
+                }
+            }
+            
+            return tours;
+        }
+        
+        /**
+         * Map ResultSet to Tour object
+         */
+        private Tour mapResultSetToTour(OleDbDataReader rs)
+        {
+            Tour tour = new Tour();
+            tour.setTourId(Convert.ToInt32(rs["id"]));
+            tour.setName(rs["name"].ToString());
+            tour.setDescription(rs["description"].ToString());
+            tour.setDestination(rs["destination"].ToString());
+            
+            if (rs["departure_date"] != DBNull.Value)
+            {
+                tour.setDepartureDate(Convert.ToDateTime(rs["departure_date"]));
+            }
+            
+            tour.setDuration(Convert.ToInt32(rs["duration"]));
+            
+            // Handle potential null for price
+            if (rs["price"] != DBNull.Value)
+            {
+                tour.setPrice(Convert.ToDecimal(rs["price"]));
+            }
+            
+            tour.setMaxParticipants(Convert.ToInt32(rs["max_participants"]));
+            tour.setCurrentParticipants(Convert.ToInt32(rs["current_participants"]));
+            tour.setImageUrl(rs["image_url"] != DBNull.Value ? rs["image_url"].ToString() : null);
+            tour.setStatus(rs["status"].ToString());
+            
+            return tour;
+        }
+        
+        /**
+         * Sanitize string for database queries
+         */
+        private string sanitizeString(string str)
+        {
+            return (str != null) ? str.Trim() : "";
+        }
+    }
+}

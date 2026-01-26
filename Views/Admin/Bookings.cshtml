@@ -1,0 +1,129 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Quản lý đặt tour";
+    var bookings = ViewData["bookings"] as List<TourBookingSystem.Models.Booking>;
+    var search = ViewData["search"] as string;
+    var statusFilter = ViewData["statusFilter"] as string;
+}
+
+<div class="admin-page">
+    <div class="page-header">
+        <h1>Quản lý đặt tour</h1>
+        <div class="admin-nav">
+            <a href="@Url.Action("Index", "Admin")">Tổng quan</a>
+            <a href="@Url.Action("Users", "Admin")">Người dùng</a>
+            <a href="@Url.Action("Tours", "Admin")">Tour</a>
+            <a href="@Url.Action("Bookings", "Admin")" class="active">Đặt tour</a>
+        </div>
+    </div>
+    
+    <div class="admin-toolbar">
+        <form action="@Url.Action("Bookings", "Admin")" method="get" class="search-form">
+            <input type="text" name="search" value="@search" placeholder="Tìm theo tên khách hàng, tour...">
+            <select name="status">
+                <option value="">Tất cả trạng thái</option>
+                <option value="PENDING" @(statusFilter == "PENDING" ? "selected" : "")>Chờ xác nhận</option>
+                <option value="CONFIRMED" @(statusFilter == "CONFIRMED" ? "selected" : "")>Đã xác nhận</option>
+                <option value="CANCELLED" @(statusFilter == "CANCELLED" ? "selected" : "")>Đã hủy</option>
+                <option value="COMPLETED" @(statusFilter == "COMPLETED" ? "selected" : "")>Hoàn thành</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        </form>
+    </div>
+    
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Mã đặt</th>
+                <th>Khách hàng</th>
+                <th>Tour</th>
+                <th>Ngày đặt</th>
+                <th>Số người</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (bookings != null && bookings.Count > 0)
+            {
+                foreach (var booking in bookings)
+                {
+                    <tr>
+                        <td>#@booking.getBookingId()</td>
+                        <td>@booking.getUserName()<br><small>@booking.getUserEmail()</small></td>
+                        <td>@booking.getTourName()<br><small>@booking.getTourDestination()</small></td>
+                        <td>@booking.getFormattedDate()</td>
+                        <td>@booking.getNumParticipants()</td>
+                        <td>@booking.getFormattedPrice()</td>
+                        <td>
+                            <span class="status-badge @booking.getStatus().ToLower()">@booking.getFormattedStatus()</span>
+                        </td>
+                        <td>
+                            @if ("PENDING".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
+                            {
+                                <button class="btn btn-success btn-sm" onclick="updateStatus(@booking.getBookingId(), 'CONFIRMED')">Xác nhận</button>
+                                <button class="btn btn-danger btn-sm" onclick="updateStatus(@booking.getBookingId(), 'CANCELLED')">Hủy</button>
+                            }
+                            else if ("CONFIRMED".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
+                            {
+                                <button class="btn btn-info btn-sm" onclick="updateStatus(@booking.getBookingId(), 'COMPLETED')">Hoàn thành</button>
+                            }
+                            <button class="btn btn-danger btn-sm" onclick="deleteBooking(@booking.getBookingId())">Xóa</button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="no-data">Không tìm thấy đơn đặt nào</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function updateStatus(bookingId, status) {
+        if (confirm('Bạn có chắc muốn cập nhật trạng thái đơn đặt này?')) {
+            fetch('@Url.Action("UpdateBookingStatus", "Admin")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'bookingId=' + bookingId + '&status=' + status
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    }
+    
+    function deleteBooking(bookingId) {
+        if (confirm('Bạn có chắc muốn xóa đơn đặt này?')) {
+            fetch('@Url.Action("DeleteBooking", "Admin")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'bookingId=' + bookingId
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    }
+</script>

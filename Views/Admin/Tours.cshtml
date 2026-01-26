@@ -1,0 +1,119 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Quản lý tour";
+    var tours = ViewData["tours"] as List<TourBookingSystem.Models.Tour>;
+    var search = ViewData["search"] as string;
+    var statusFilter = ViewData["statusFilter"] as string;
+}
+
+<div class="admin-page">
+    <div class="page-header">
+        <h1>Quản lý tour</h1>
+        <div class="admin-nav">
+            <a href="@Url.Action("Index", "Admin")">Tổng quan</a>
+            <a href="@Url.Action("Users", "Admin")">Người dùng</a>
+            <a href="@Url.Action("Tours", "Admin")" class="active">Tour</a>
+            <a href="@Url.Action("Bookings", "Admin")">Đặt tour</a>
+        </div>
+    </div>
+    
+    <div class="admin-toolbar">
+        <form action="@Url.Action("Tours", "Admin")" method="get" class="search-form">
+            <input type="text" name="search" value="@search" placeholder="Tìm theo tên tour...">
+            <select name="status">
+                <option value="">Tất cả trạng thái</option>
+                <option value="ACTIVE" @(statusFilter == "ACTIVE" ? "selected" : "")>Hoạt động</option>
+                <option value="INACTIVE" @(statusFilter == "INACTIVE" ? "selected" : "")>Không hoạt động</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        </form>
+    </div>
+    
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Hình ảnh</th>
+                <th>Tên tour</th>
+                <th>Điểm đến</th>
+                <th>Giá</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (tours != null && tours.Count > 0)
+            {
+                foreach (var tour in tours)
+                {
+                    <tr>
+                        <td>@tour.getTourId()</td>
+                        <td><img src="@tour.getImageUrl()" alt="@tour.getName()" class="tour-thumb"></td>
+                        <td>@tour.getName()</td>
+                        <td>@tour.getDestination()</td>
+                        <td>@tour.getFormattedPrice()</td>
+                        <td>
+                            <span class="status-badge @tour.getStatus().ToLower()">@tour.getStatus()</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="updateStatus(@tour.getTourId(), '@(tour.getStatus() == "ACTIVE" ? "INACTIVE" : "ACTIVE")')">
+                                @(tour.getStatus() == "ACTIVE" ? "Vô hiệu hóa" : "Kích hoạt")
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteTour(@tour.getTourId())">Xóa</button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="no-data">Không tìm thấy tour nào</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function updateStatus(tourId, status) {
+        if (confirm('Bạn có chắc muốn thay đổi trạng thái tour này?')) {
+            fetch('@Url.Action("UpdateTourStatus", "Admin")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'tourId=' + tourId + '&status=' + status
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    }
+    
+    function deleteTour(tourId) {
+        if (confirm('Bạn có chắc muốn xóa tour này?')) {
+            fetch('@Url.Action("DeleteTour", "Admin")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'tourId=' + tourId
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    }
+</script>

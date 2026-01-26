@@ -1,0 +1,132 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Chi tiết tour";
+    var tour = ViewData["tour"] as TourBookingSystem.Models.Tour;
+    var relatedTours = ViewData["relatedTours"] as List<TourBookingSystem.Models.Tour>;
+}
+
+@if (tour != null)
+{
+    <div class="tour-detail-page">
+        <div class="tour-detail-header">
+            <h1>@tour.getName()</h1>
+            <p class="destination">📍 @tour.getDestination()</p>
+        </div>
+        
+        <div class="tour-detail-content">
+            <div class="tour-main-info">
+                <img src="@tour.getImageUrl()" alt="@tour.getName()" class="tour-main-image">
+                
+                <div class="tour-description">
+                    <h2>Mô tả tour</h2>
+                    <p>@tour.getDescription()</p>
+                </div>
+                
+                <div class="tour-info-grid">
+                    <div class="info-item">
+                        <span class="label">Thời gian:</span>
+                        <span class="value">@tour.getDuration() ngày</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Khởi hành:</span>
+                        <span class="value">@tour.getFormattedDepartureDate()</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Giá:</span>
+                        <span class="value price">@tour.getFormattedPrice()</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Số chỗ còn:</span>
+                        <span class="value">@tour.getAvailableSlots()</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tour-sidebar">
+                <div class="booking-box">
+                    <h3>Đặt tour</h3>
+                    <p class="booking-price">@tour.getFormattedPrice() / người</p>
+                    
+                    @if (ViewData["userId"] != null)
+                    {
+                        <form id="bookingForm">
+                            <input type="hidden" name="tourId" value="@tour.getTourId()">
+                            <div class="form-group">
+                                <label>Số lượng người</label>
+                                <input type="number" id="quantity" name="quantity" value="1" min="1" max="@tour.getAvailableSlots()">
+                            </div>
+                            <div class="form-group">
+                                <label>Ghi chú</label>
+                                <textarea name="notes" rows="3" placeholder="Yêu cầu đặc biệt..."></textarea>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-block" onclick="submitBooking()">Đặt tour</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <p>Vui lòng <a href="@Url.Action("Login", "Account")">đăng nhập</a> để đặt tour</p>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        @if (relatedTours != null && relatedTours.Count > 0)
+        {
+            <div class="related-tours">
+                <h2>Tour liên quan</h2>
+                <div class="tour-grid">
+                    @foreach (var relatedTour in relatedTours)
+                    {
+                        <div class="tour-card">
+                            <img src="@relatedTour.getImageUrl()" alt="@relatedTour.getName()">
+                            <div class="tour-info">
+                                <h3>@relatedTour.getName()</h3>
+                                <p class="destination">@relatedTour.getDestination()</p>
+                                <p class="price">@relatedTour.getFormattedPrice()</p>
+                                <a href="@Url.Action("TourDetail", "Home", new { id = relatedTour.getTourId() })" class="btn btn-secondary">Chi tiết</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="not-found">
+        <h1>Tour không tồn tại</h1>
+        <a href="@Url.Action("TourList", "Home")" class="btn btn-primary">Quay lại danh sách</a>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function submitBooking() {
+            var tourId = @tour.getTourId();
+            var quantity = document.getElementById('quantity').value;
+            var notes = document.querySelector('textarea[name="notes"]').value;
+            
+            fetch('@Url.Action("Index", "Booking")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'action=create&tourId=' + tourId + '&quantity=' + quantity + '&notes=' + encodeURIComponent(notes)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    window.location.href = '@Url.Action("Index", "Booking")';
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra!');
+            });
+        }
+    </script>
+}

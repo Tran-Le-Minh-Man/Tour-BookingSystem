@@ -1,0 +1,128 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Quản lý người dùng";
+    var users = ViewData["users"] as List<TourBookingSystem.Models.User>;
+    var search = ViewData["search"] as string;
+    var roleFilter = ViewData["roleFilter"] as string;
+}
+
+<div class="admin-page">
+    <div class="page-header">
+        <h1>Quản lý người dùng</h1>
+        <div class="admin-nav">
+            <a href="@Url.Action("Index", "Admin")">Tổng quan</a>
+            <a href="@Url.Action("Users", "Admin")" class="active">Người dùng</a>
+            <a href="@Url.Action("Tours", "Admin")">Tour</a>
+            <a href="@Url.Action("Bookings", "Admin")">Đặt tour</a>
+        </div>
+    </div>
+
+    <div class="admin-toolbar">
+        <form action="@Url.Action("Users", "Admin")" method="get" class="search-form">
+            <input type="text" name="search" value="@search" placeholder="Tìm theo tên, email...">
+            <select name="role">
+                <option value="">Tất cả vai trò</option>
+                <option value="ADMIN" @(roleFilter == "ADMIN" ? "selected" : "")>Admin</option>
+                <option value="USER" @(roleFilter == "USER" ? "selected" : "")>User</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        </form>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Vai trò</th>
+                <th>Ngày tạo</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (users != null && users.Count > 0)
+            {
+                foreach (var user in users)
+                {
+                    <tr>
+                        <td>@user.getUserId()</td>
+                        <td>@user.getFullName()</td>
+                        <td>@user.getEmail()</td>
+                        <td>@user.getPhone()</td>
+                        <td>
+                            @{
+                                var currentUserId = ViewData["userId"] as int?;
+                                var currentUserIdStr = ViewData["userId"]?.ToString();
+                            }
+                            <select onchange="updateRole(@user.getUserId(), this.value)" @(user.getUserId() == currentUserId ? "disabled" : "")>
+                                <option value="USER" @(user.getRole() == "USER" ? "selected" : "")>User</option>
+                                <option value="ADMIN" @(user.getRole() == "ADMIN" ? "selected" : "")>Admin</option>
+                            </select>
+                        </td>
+                        <td>@user.getCreatedAt()</td>
+                        <td>
+                            @if (user.getUserId() != currentUserId)
+                            {
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser(@user.getUserId())">Xóa</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="no-data">Không tìm thấy người dùng nào</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function updateRole(userId, role) {
+        if (confirm('Bạn có chắc muốn thay đổi vai trò người dùng này?')) {
+            fetch('@Url.Action("UpdateUserRole", "Admin")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'userIdToUpdate=' + userId + '&role=' + role
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                    location.reload();
+                }
+            });
+        } else {
+            location.reload();
+        }
+    }
+
+    function deleteUser(userId) {
+        if (confirm('Bạn có chắc muốn xóa người dùng này?')) {
+            fetch('@Url.Action("DeleteUser", "Admin")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'userIdToDelete=' + userId
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    }
+</script>

@@ -1,0 +1,378 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using TourBookingSystem.Models;
+using TourBookingSystem.DAOs;
+using TourBookingSystem.Utils;
+
+namespace TourBookingSystem.Controllers
+{
+    /**
+     * Controller for handling user authentication
+     */
+    public class AccountController : Controller
+    {
+        private UserDAO userDAO;
+        private static readonly int REMEMBER_ME_COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 days in seconds
+        private static readonly int MAX_LOGIN_ATTEMPTS = 5;
+        private static readonly int LOCKOUT_TIME = 15 * 60; // 15 minutes in seconds
+        
+        // Rate limiting storage
+        private static readonly Dictionary<string, LoginAttempt> loginAttempts = new Dictionary<string, LoginAttempt>();
+        
+        /**
+         * Inner class to track login attempts
+         */
+        private class LoginAttempt
+        {
+            public int count;
+            public long lastAttempt;
+            
+            public LoginAttempt()
+            {
+                this.count = 0;
+                this.lastAttempt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            }
+            
+            public void increment()
+            {
+                this.count++;
+                this.lastAttempt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            }
+            
+            public bool isLocked()
+            {
+                if (count >= MAX_LOGIN_ATTEMPTS)
+                {
+                    long lockoutEnd = lastAttempt + (LOCKOUT_TIME * 1000L);
+                    return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() < lockoutEnd;
+                }
+                return false;
+            }
+            
+            public int getRemainingAttempts()
+            {
+                return Math.Max(0, MAX_LOGIN_ATTEMPTS - count);
+            }
+        }
+        
+        public AccountController()
+        {
+            userDAO = new UserDAO();
+        }
+        
+        /**
+         * GET: /Account/Login
+         */
+        [HttpGet]
+        public IActionResult Login()
+        {
+            HttpContext.Session.Remove("_csrf_token");
+            
+            // Check if user is already logged in
+            if (HttpContext.Session.GetInt32("userId") != null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            
+            // Check for remember me cookie and auto-login
+            string rememberToken = HttpContext.Request.Cookies["auth_token"];
+            if (!string.IsNullOrEmpty(rememberToken))
+            {
+                User user = userDAO.findByRememberToken(rememberToken);
+                if (user != null)
+                {
+                    createUserSession(user);
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+            
+            // Generate CSRF token
+            string csrfToken = Guid.NewGuid().ToString();
+            HttpContext.Session.SetString("_csrf_token", csrfToken);
+            ViewData["_csrf_token"] = csrfToken;
+            
+            // Check for success message from registration
+            if (TempData["success"] != null)
+            {
+                ViewData["success"] = TempData["success"];
+            }
+            
+            // Check for lockout status
+            string clientIP = getClientIP();
+            if (loginAttempts.TryGetValue(clientIP, out LoginAttempt attempt) && attempt.isLocked())
+            {
+                long remainingTime = (attempt.lastAttempt + (LOCKOUT_TIME * 1000) - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()) / 1000;
+                ViewData["error"] = "Tài khoản tạm khóa. Vui lòng thử lại sau " + remainingTime + " giây.";
+            }
+            
+            return View();
+        }
+        
+        /**
+         * POST: /Account/Login
+         */
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Login(string email, string password, string remember)
+        {
+            string clientIP = getClientIP();
+            
+            // Check for rate limiting
+            if (!loginAttempts.TryGetValue(clientIP, out LoginAttempt attempt))
+            {
+                attempt = new LoginAttempt();
+                loginAttempts[clientIP] = attempt;
+            }
+            
+            if (attempt.isLocked())
+            {
+                long remainingTime = (attempt.lastAttempt + (LOCKOUT_TIME * 1000) - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()) / 1000;
+                ViewData["error"] = "Tài khoản tạm khóa. Vui lòng thử lại sau " + remainingTime + " giây.";
+                return View();
+            }
+            
+            try
+            {
+                // Get and validate CSRF token
+                string sessionCsrfToken = HttpContext.Session.GetString("_csrf_token");
+                
+                if (sessionCsrfToken == null || !sessionCsrfToken.Equals(Request.Form["_csrf_token"]))
+                {
+                    attempt.increment();
+                    ViewData["error"] = "Yêu cầu không hợp lệ. Vui lòng thử lại.";
+                    return View();
+                }
+                
+                // Basic validation
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                {
+                    attempt.increment();
+                    ViewData["error"] = "Vui lòng nhập đầy đủ email và mật khẩu.";
+                    ViewData["email"] = email;
+                    return View();
+                }
+                
+                // Verify login credentials
+                User user = userDAO.verifyLogin(email.Trim().ToLower(), password);
+                
+                if (user == null)
+                {
+                    // Login failed - increment attempt counter
+                    attempt.increment();
+                    ViewData["error"] = "Email hoặc mật khẩu không đúng.";
+                    ViewData["email"] = email;
+                    return View();
+                }
+                
+                // Login successful - reset attempt counter
+                loginAttempts.Remove(clientIP);
+                
+                // Create new session to prevent session fixation
+                HttpContext.Session.Clear();
+                
+                // Store user in session
+                createUserSession(user);
+                
+                // Handle remember me functionality with secure token storage
+                if ("on".Equals(remember))
+                {
+                    string token = generateSecureToken();
+                    
+                    // Store token in database with expiry
+                    DateTime expiryDate = DateTime.Now.AddDays(7);
+                    userDAO.updateRememberToken(user.getUserId(), token, expiryDate);
+                    
+                    // Create secure cookie
+                    CookieOptions cookieOptions = new CookieOptions();
+                    cookieOptions.Expires = DateTime.Now.AddDays(7);
+                    cookieOptions.Path = "/";
+                    cookieOptions.HttpOnly = true;
+                    cookieOptions.Secure = Request.IsHttps;
+                    Response.Cookies.Append("auth_token", token, cookieOptions);
+                }
+                
+                // Redirect to home page
+                return RedirectToAction("Index", "Home");
+                
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Login error: " + e.Message);
+                ViewData["error"] = "Có lỗi xảy ra. Vui lòng thử lại sau.";
+                return View();
+            }
+        }
+        
+        /**
+         * GET: /Account/Register
+         */
+        [HttpGet]
+        public IActionResult Register()
+        {
+            if (HttpContext.Session.GetInt32("userId") != null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            
+            // Generate CSRF token
+            string csrfToken = Guid.NewGuid().ToString();
+            HttpContext.Session.SetString("_csrf_token", csrfToken);
+            ViewData["_csrf_token"] = csrfToken;
+            
+            return View();
+        }
+        
+        /**
+         * POST: /Account/Register
+         */
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Register(string fullName, string email, string phone, string password, string confirmPassword)
+        {
+            // Validate CSRF token
+            string sessionCsrfToken = HttpContext.Session.GetString("_csrf_token");
+            if (sessionCsrfToken == null || !sessionCsrfToken.Equals(Request.Form["_csrf_token"]))
+            {
+                ViewData["error"] = "Yêu cầu không hợp lệ. Vui lòng thử lại.";
+                return View();
+            }
+            
+            // Basic validation
+            if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(email) || 
+                string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirmPassword))
+            {
+                ViewData["error"] = "Vui lòng nhập đầy đủ thông tin bắt buộc.";
+                ViewData["fullName"] = fullName;
+                ViewData["email"] = email;
+                ViewData["phone"] = phone;
+                return View();
+            }
+            
+            if (!password.Equals(confirmPassword))
+            {
+                ViewData["error"] = "Mật khẩu xác nhận không khớp.";
+                ViewData["fullName"] = fullName;
+                ViewData["email"] = email;
+                ViewData["phone"] = phone;
+                return View();
+            }
+            
+            // Check if email already exists
+            if (userDAO.emailExists(email))
+            {
+                ViewData["error"] = "Email đã được đăng ký.";
+                ViewData["fullName"] = fullName;
+                ViewData["email"] = email;
+                ViewData["phone"] = phone;
+                return View();
+            }
+            
+            try
+            {
+                // Create new user
+                User user = new User();
+                user.setFullName(fullName);
+                user.setEmail(email);
+                user.setPhone(phone);
+                user.setRole("USER");
+                
+                // Register user
+                bool success = userDAO.register(user, password);
+                
+                if (success)
+                {
+                    TempData["success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                    return RedirectToAction("Login", "Account");
+                }
+                else
+                {
+                    ViewData["error"] = "Đăng ký thất bại. Vui lòng thử lại.";
+                    ViewData["fullName"] = fullName;
+                    ViewData["email"] = email;
+                    ViewData["phone"] = phone;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Registration error: " + e.Message);
+                ViewData["error"] = "Có lỗi xảy ra. Vui lòng thử lại sau.";
+                ViewData["fullName"] = fullName;
+                ViewData["email"] = email;
+                ViewData["phone"] = phone;
+            }
+            
+            return View();
+        }
+        
+        /**
+         * GET: /Account/Logout
+         */
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            int? userId = HttpContext.Session.GetInt32("userId");
+            
+            if (userId.HasValue)
+            {
+                // Clear remember token in database
+                userDAO.clearRememberToken(userId.Value);
+            }
+            
+            // Clear session
+            HttpContext.Session.Clear();
+            
+            // Clear remember me cookie
+            Response.Cookies.Delete("auth_token");
+            
+            return RedirectToAction("Index", "Home");
+        }
+        
+        /**
+         * Create user session
+         */
+        private void createUserSession(User user)
+        {
+            HttpContext.Session.SetInt32("userId", user.getUserId());
+            HttpContext.Session.SetString("email", user.getEmail());
+            HttpContext.Session.SetString("fullName", user.getFullName());
+            HttpContext.Session.SetString("role", user.getRole());
+
+            // Note: Session timeout is configured in Program.cs (default: 30 minutes)
+            // HttpContext.Session.Timeout cannot be set at runtime in ASP.NET Core
+
+            // Generate new CSRF token after login
+            string newCsrfToken = Guid.NewGuid().ToString();
+            HttpContext.Session.SetString("_csrf_token", newCsrfToken);
+        }
+        
+        /**
+         * Generate a secure remember token
+         */
+        private string generateSecureToken()
+        {
+            byte[] bytes = new byte[64]; // 512 bits
+            using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(bytes);
+            }
+            return Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_');
+        }
+        
+        /**
+         * Get client IP address
+         */
+        private string getClientIP()
+        {
+            string xForwardedFor = Request.Headers["X-Forwarded-For"];
+            if (!string.IsNullOrEmpty(xForwardedFor))
+            {
+                return xForwardedFor.Split(',')[0].Trim();
+            }
+            return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        }
+    }
+}

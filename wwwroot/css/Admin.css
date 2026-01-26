@@ -1,0 +1,1042 @@
+/* Admin CSS - Tour Booking System */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f6f9;
+}
+
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+    color: #fff;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-header h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.sidebar-header h2 i {
+    color: #3498db;
+    margin-right: 8px;
+}
+
+.sidebar-menu {
+    padding: 20px 0;
+}
+
+.sidebar-menu ul {
+    list-style: none;
+}
+
+.sidebar-menu li {
+    margin: 2px 10px;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: #bdc3c7;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu a:hover,
+.sidebar-menu a.active {
+    background: rgba(52, 152, 219, 0.2);
+    color: #fff;
+}
+
+.sidebar-menu a.active {
+    border-left: 3px solid #3498db;
+}
+
+.sidebar-menu i {
+    width: 25px;
+    margin-right: 10px;
+    text-align: center;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 260px;
+    padding: 30px;
+    min-height: 100vh;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 1.8rem;
+    color: #2c3e50;
+}
+
+.page-header h1 i {
+    color: #3498db;
+    margin-right: 10px;
+}
+
+.page-header p {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+/* ========== STATS GRID ========== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.5rem;
+    color: #fff;
+}
+
+.stat-icon.blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+.stat-icon.green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.stat-icon.orange { background: linear-gradient(135deg, #f39c12, #e67e22); }
+.stat-icon.purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+
+.stat-info h3 {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    margin-bottom: 5px;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* ========== DASHBOARD SECTIONS ========== */
+.dashboard-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.dashboard-section h2 {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.dashboard-section h2 i {
+    color: #3498db;
+    margin-right: 10px;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: #3498db;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.action-btn i {
+    margin-right: 8px;
+}
+
+/* ========== BUTTONS ========== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn i {
+    margin-right: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #2471a3 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+    transform: translateY(-2px);
+}
+
+/* ==================== BORDER LAYOUT STYLES ==================== */
+/* Layout dạng khung với căn giữa - Border frame with center alignment */
+
+.border-frame {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.border-frame-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: #fff;
+    padding: 18px 25px;
+    text-align: center;
+}
+
+.border-frame-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.border-frame-header i {
+    margin-right: 10px;
+    color: #3498db;
+}
+
+.border-frame-body {
+    padding: 20px;
+}
+
+/* Khung dữ liệu có tiêu đề - Data frame with header */
+.data-frame {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    background: #fff;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.data-frame-header {
+    background: #f8f9fa;
+    padding: 14px 20px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.data-frame-header h4 {
+    font-size: 0.95rem;
+    color: #2c3e50;
+    margin: 0;
+    font-weight: 600;
+}
+
+.data-frame-header h4 i {
+    margin-right: 8px;
+    color: #3498db;
+}
+
+.data-frame-body {
+    padding: 20px;
+}
+
+/* Bảng trong khung - Table inside frame */
+.border-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.border-table thead tr:first-child th:first-child {
+    border-top-left-radius: 8px;
+}
+
+.border-table thead tr:first-child th:last-child {
+    border-top-right-radius: 8px;
+}
+
+.border-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 8px;
+}
+
+.border-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 8px;
+}
+
+.border-table th {
+    background: #f1f3f4;
+    padding: 14px 18px;
+    text-align: center;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.9rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.border-table td {
+    padding: 14px 18px;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+    color: #495057;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+.border-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Căn giữa tất cả nội dung - Center all content */
+.center-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Căn giữa ngang - Horizontal center */
+.center-horizontal {
+    text-align: center;
+}
+
+/* Căn giữa dọc - Vertical center */
+.center-vertical {
+    display: flex;
+    align-items: center;
+}
+
+/* Căn giữa toàn diện - Full center */
+.center-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Container với khung và căn giữa - Framed centered container */
+.framed-container {
+    border: 2px solid #3498db;
+    border-radius: 12px;
+    padding: 25px;
+    background: #fff;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.framed-container.dark-border {
+    border-color: #2c3e50;
+}
+
+.framed-container.success-border {
+    border-color: #2ecc71;
+}
+
+/* Card trong khung với căn giữa - Centered framed card */
+.framed-card {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    background: #fff;
+    transition: all 0.3s ease;
+}
+
+.framed-card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-3px);
+}
+
+.framed-card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+.framed-card-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.framed-card-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* Item trong khung với căn giữa - Centered framed item */
+.framed-item {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 18px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+}
+
+.framed-item:hover {
+    background: #f8f9fa;
+    border-color: #3498db;
+}
+
+.framed-item-content {
+    text-align: left;
+}
+
+.framed-item-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.framed-item-subtitle {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.framed-item-action {
+    flex-shrink: 0;
+}
+
+/* Stats card với khung và căn giữa - Framed centered stats */
+.framed-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.framed-stat {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    background: #fff;
+}
+
+.framed-stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+}
+
+.framed-stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.framed-stat-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+/* Filter bar với khung - Framed filter bar */
+.framed-filter {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 18px 25px;
+    background: #f8f9fa;
+    margin-bottom: 20px;
+}
+
+.framed-filter-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.framed-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.framed-filter-group label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.framed-filter-group select,
+.framed-filter-group input {
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    min-width: 150px;
+}
+
+.framed-filter-group input[type="text"] {
+    min-width: 250px;
+}
+
+/* Pagination với khung - Framed pagination */
+.framed-pagination {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 15px 25px;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.framed-pagination a,
+.framed-pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #495057;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.framed-pagination a:hover {
+    background: #3498db;
+    color: #fff;
+}
+
+.framed-pagination span.current {
+    background: #3498db;
+    color: #fff;
+}
+
+/* Action bar với khung - Framed action bar */
+.framed-action-bar {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 18px 25px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.framed-action-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.framed-action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+/* Detail frame với căn giữa - Centered detail frame */
+.detail-frame {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.detail-frame-header {
+    background: #2c3e50;
+    color: #fff;
+    padding: 15px 20px;
+    text-align: center;
+}
+
+.detail-frame-header h4 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.detail-frame-body {
+    padding: 25px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    text-align: right;
+}
+
+.detail-value.center {
+    text-align: center;
+}
+
+/* Empty state với khung - Framed empty state */
+.framed-empty {
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    padding: 50px;
+    text-align: center;
+    background: #f8f9fa;
+}
+
+.framed-empty-icon {
+    font-size: 3rem;
+    color: #adb5bd;
+    margin-bottom: 15px;
+}
+
+.framed-empty-text {
+    color: #6c757d;
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+/* ========== BORDER LAYOUT CHO TOUR FORM ========== */
+.border-frame-frame {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.border-table-form {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background: #fafbfc;
+}
+
+.section-header {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: #fff;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.section-header i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+/* ========== FORM STYLES CHO TOUR FORM ========== */
+.admin-page {
+    width: 100%;
+}
+
+.form-container {
+    width: 100%;
+}
+
+.admin-form {
+    width: 100%;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: span 2;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group textarea,
+.form-group select {
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #fff;
+    color: #2c3e50;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: inherit;
+}
+
+.form-group .required {
+    color: #e74c3c;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #95a5a6;
+}
+
+/* ========== FILE UPLOAD ========== */
+.file-upload-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.file-upload-btn:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #2471a3 100%);
+    transform: translateY(-2px);
+}
+
+.file-name {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    font-style: italic;
+}
+
+.current-image {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.current-image p {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.current-image img {
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    max-width: 250px;
+    height: auto;
+}
+
+/* ========== STATUS OPTIONS ========== */
+.status-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px 0;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.radio-label:hover {
+    border-color: #3498db;
+    background: #f8f9fa;
+}
+
+.radio-label input[type="radio"] {
+    display: none;
+}
+
+.radio-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #bdc3c7;
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom {
+    border-color: #3498db;
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: #3498db;
+    border-radius: 50%;
+}
+
+.radio-label .active-icon {
+    color: #27ae60;
+    font-size: 1.2rem;
+}
+
+.radio-label .inactive-icon {
+    color: #e74c3c;
+    font-size: 1.2rem;
+}
+
+/* ========== FORM ACTIONS ========== */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 25px 20px;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+}
+
+/* ========== ALERTS ========== */
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert i {
+    font-size: 1.2rem;
+}
+
+.alert-danger {
+    background: #fdf0ed;
+    color: #c0392b;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    background: #eafaf1;
+    color: #27ae60;
+    border: 1px solid #c3e6cb;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 992px) {
+    .sidebar {
+        width: 70px;
+    }
+    
+    .sidebar-header h2 span,
+    .sidebar-menu a span {
+        display: none;
+    }
+    
+    .sidebar-menu a {
+        justify-content: center;
+    }
+    
+    .sidebar-menu i {
+        margin: 0;
+    }
+    
+    .main-content {
+        margin-left: 70px;
+    }
+}
+
+@media (max-width: 768px) {
+    .border-frame-body {
+        padding: 15px;
+    }
+    
+    .framed-filter-row {
+        flex-direction: column;
+    }
+    
+    .framed-filter-group {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .framed-action-bar {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .framed-item {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .framed-item-content {
+        text-align: center;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-group.full-width {
+        grid-column: span 1;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        justify-content: center;
+    }
+}

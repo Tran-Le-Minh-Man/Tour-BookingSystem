@@ -1,0 +1,90 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Trang chủ";
+    var featuredTours = ViewData["featuredTours"] as List<TourBookingSystem.Models.Tour>;
+    var destinations = ViewData["destinations"] as List<string>;
+}
+
+<div class="home-page">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Khám phá những điểm đến tuyệt vời</h1>
+            <p>Đặt tour du lịch ngay hôm nay để nhận ưu đãi hấp dẫn</p>
+            <a href="@Url.Action("TourList", "Home")" class="btn btn-primary">Xem tour ngay</a>
+        </div>
+    </section>
+    
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="search-box">
+            <form action="@Url.Action("TourList", "Home")" method="get">
+                <div class="search-row">
+                    <div class="search-field">
+                        <label>Từ khóa</label>
+                        <input type="text" name="keyword" placeholder="Tìm tour...">
+                    </div>
+                    <div class="search-field">
+                        <label>Điểm đến</label>
+                        <select name="destination">
+                            <option value="">Tất cả điểm đến</option>
+                            @foreach (var dest in destinations)
+                            {
+                                <option value="@dest">@dest</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="search-field">
+                        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    
+    <!-- Featured Tours -->
+    <section class="featured-tours">
+        <h2>Tour nổi bật</h2>
+        <div class="tour-grid">
+            @if (featuredTours != null && featuredTours.Count > 0)
+            {
+                foreach (var tour in featuredTours)
+                {
+                    <div class="tour-card">
+                        <img src="@tour.getImageUrl()" alt="@tour.getName()">
+                        <div class="tour-info">
+                            <h3>@tour.getName()</h3>
+                            <p class="destination">@tour.getDestination()</p>
+                            <p class="duration">@tour.getDuration() ngày</p>
+                            <p class="price">@tour.getFormattedPrice()</p>
+                            <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })" class="btn btn-secondary">Chi tiết</a>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="no-tours">Chưa có tour nào</p>
+            }
+        </div>
+    </section>
+    
+    <!-- Why Choose Us -->
+    <section class="why-choose-us">
+        <h2>Tại sao chọn chúng tôi</h2>
+        <div class="features">
+            <div class="feature">
+                <h3>Giá tốt nhất</h3>
+                <p>Cam kết giá tour tốt nhất thị trường</p>
+            </div>
+            <div class="feature">
+                <h3>Dịch vụ chất lượng</h3>
+                <p>Đội ngũ hướng dẫn viên chuyên nghiệp</p>
+            </div>
+            <div class="feature">
+                <h3>An toàn tuyệt đối</h3>
+                <p>Bảo hiểm du lịch toàn diện</p>
+            </div>
+        </div>
+    </section>
+</div>
