@@ -75,6 +75,7 @@
                                 </a>
                                 @if ("ADMIN".Equals(role, StringComparison.OrdinalIgnoreCase))
                                 {
+
                                     <a href="@Url.Action("Index", "Admin")">
                                         <i class="fas fa-cogs"></i> Trang quản trị
                                     </a>
@@ -82,7 +83,7 @@
                             </div>
                         </li>
                         <li class="user-greeting">
-                            <span>Xin chào, <strong class="user_name">@fullName</strong></span>
+                            <span>Xin chào, <strong class="user_name">@fullName</strong>, <strong>@role</strong></span>
                         </li>
                     }
                     else

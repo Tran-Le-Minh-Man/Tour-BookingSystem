@@ -31,7 +31,7 @@
                 <div class="tour-detail-main">
                     <!-- Tour Image -->
                     <div class="tour-detail-image">
-                        <img src="@Model.getImageUrl()" alt="@Model.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/900x500'">
+                        <img src="@(string.IsNullOrEmpty(Model.getImageUrl()) ? "https://via.placeholder.com/900x500" : (Model.getImageUrl().StartsWith("http") ? Model.getImageUrl() : Url.Content("~/" + Model.getImageUrl().TrimStart('/'))))" alt="@Model.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/900x500'">
                         @if (Model.getAvailableSlots() <= 5 && Model.getAvailableSlots() > 0)
                         {
                             <div class="image-badge badge-warning">
@@ -221,7 +221,7 @@
                         {
                             <div class="tour-card">
                                 <div class="tour-image">
-                                    <img src="@(related.getImageUrl()?.StartsWith("http") == true ? related.getImageUrl() : Url.Content("~/" + related.getImageUrl()))" alt="@related.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250'">
+                                    <img src="@(related.getImageUrl()?.StartsWith("http") == true ? related.getImageUrl() : Url.Content("~/" + related.getImageUrl()?.TrimStart('/')))" alt="@related.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250'">
                                 </div>
                                 <div class="tour-info">
                                     <div class="tour-destination">
