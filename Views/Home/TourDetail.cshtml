@@ -1,132 +1,254 @@
+@model TourBookingSystem.Models.Tour
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Chi tiết tour";
-    var tour = ViewData["tour"] as TourBookingSystem.Models.Tour;
+    ViewData["Title"] = Model != null ? Model.getName() : "Chi tiết tour";
     var relatedTours = ViewData["relatedTours"] as List<TourBookingSystem.Models.Tour>;
+    bool isFavorite = ViewData["isFavorite"] != null && (bool)ViewData["isFavorite"];
+    bool isLoggedIn = ViewData["userId"] != null;
 }
-
-@if (tour != null)
+@section Styles {
+    <link rel="stylesheet" href="~/css/tour_detail.css">
+}
+@if (Model != null)
 {
-    <div class="tour-detail-page">
-        <div class="tour-detail-header">
-            <h1>@tour.getName()</h1>
-            <p class="destination">📍 @tour.getDestination()</p>
+    <!-- Breadcrumb -->
+    <section class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")"><i class="fas fa-home"></i> Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("TourList", "Home")">Danh sách tour</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.getName()</li>
+                </ol>
+            </nav>
         </div>
-        
-        <div class="tour-detail-content">
-            <div class="tour-main-info">
-                <img src="@tour.getImageUrl()" alt="@tour.getName()" class="tour-main-image">
-                
-                <div class="tour-description">
-                    <h2>Mô tả tour</h2>
-                    <p>@tour.getDescription()</p>
-                </div>
-                
-                <div class="tour-info-grid">
-                    <div class="info-item">
-                        <span class="label">Thời gian:</span>
-                        <span class="value">@tour.getDuration() ngày</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Khởi hành:</span>
-                        <span class="value">@tour.getFormattedDepartureDate()</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Giá:</span>
-                        <span class="value price">@tour.getFormattedPrice()</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Số chỗ còn:</span>
-                        <span class="value">@tour.getAvailableSlots()</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tour-sidebar">
-                <div class="booking-box">
-                    <h3>Đặt tour</h3>
-                    <p class="booking-price">@tour.getFormattedPrice() / người</p>
-                    
-                    @if (ViewData["userId"] != null)
-                    {
-                        <form id="bookingForm">
-                            <input type="hidden" name="tourId" value="@tour.getTourId()">
-                            <div class="form-group">
-                                <label>Số lượng người</label>
-                                <input type="number" id="quantity" name="quantity" value="1" min="1" max="@tour.getAvailableSlots()">
+    </section>
+    <!-- Tour Detail Section -->
+    <section class="tour-detail-section">
+        <div class="container">
+            <div class="tour-detail-layout">
+                <!-- Left Column: Tour Information -->
+                <div class="tour-detail-main">
+                    <!-- Tour Image -->
+                    <div class="tour-detail-image">
+                        <img src="@Model.getImageUrl()" alt="@Model.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/900x500'">
+
+                        @if (Model.getAvailableSlots() <= 5 && Model.getAvailableSlots() > 0)
+                        {
+                            <div class="image-badge badge-warning">
+                                <i class="fas fa-fire"></i> Còn @Model.getAvailableSlots() chỗ
                             </div>
-                            <div class="form-group">
-                                <label>Ghi chú</label>
-                                <textarea name="notes" rows="3" placeholder="Yêu cầu đặc biệt..."></textarea>
+                        }
+                        @if (Model.getAvailableSlots() == 0)
+                        {
+                            <div class="image-badge badge-danger">
+                                <i class="fas fa-times"></i> Hết chỗ
                             </div>
-                            <button type="button" class="btn btn-primary btn-block" onclick="submitBooking()">Đặt tour</button>
-                        </form>
-                    }
-                    else
-                    {
-                        <p>Vui lòng <a href="@Url.Action("Login", "Account")">đăng nhập</a> để đặt tour</p>
-                    }
-                </div>
-            </div>
-        </div>
-        
-        @if (relatedTours != null && relatedTours.Count > 0)
-        {
-            <div class="related-tours">
-                <h2>Tour liên quan</h2>
-                <div class="tour-grid">
-                    @foreach (var relatedTour in relatedTours)
-                    {
-                        <div class="tour-card">
-                            <img src="@relatedTour.getImageUrl()" alt="@relatedTour.getName()">
-                            <div class="tour-info">
-                                <h3>@relatedTour.getName()</h3>
-                                <p class="destination">@relatedTour.getDestination()</p>
-                                <p class="price">@relatedTour.getFormattedPrice()</p>
-                                <a href="@Url.Action("TourDetail", "Home", new { id = relatedTour.getTourId() })" class="btn btn-secondary">Chi tiết</a>
+                        }
+                    </div>
+                    <!-- Tour Info Header -->
+                    <div class="tour-detail-header">
+                        <div class="tour-header-top">
+                            <div class="tour-destination-badge">
+                                <i class="fas fa-map-marker-alt"></i> @Model.getDestination()
+                            </div>
+                            @if (isLoggedIn)
+                            {
+                                <button type="button" class="btn-favorite @(isFavorite ? "active" : "")">
+                                    <i class="@(isFavorite ? "fas" : "far") fa-heart"></i>
+                                    <span class="favorite-text">@(isFavorite ? "Đã thích" : "Yêu thích")</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Login", "Account")" class="btn-favorite">
+                                    <i class="far fa-heart"></i>
+                                    <span class="favorite-text">Yêu thích</span>
+                                </a>
+                            }
+                        </div>
+                        <h1 class="tour-title">@Model.getName()</h1>
+
+                        <div class="tour-meta">
+                            <div class="meta-item">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>Khởi hành: <strong>@Model.getFormattedDepartureDate()</strong></span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Thời gian: <strong>@Model.getDuration() ngày</strong></span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-users"></i>
+                                <span>Số chỗ: <strong>@Model.getAvailableSlots() / @Model.getMaxParticipants()</strong></span>
                             </div>
                         </div>
-                    }
+                    </div>
+                    <!-- Tour Description -->
+                    <div class="tour-content">
+                        <h2><i class="fas fa-info-circle"></i> Giới thiệu tour</h2>
+                        <div class="description-text">
+                            <p>@Model.getDescription()</p>
+                        </div>
+                    </div>
+                    <!-- Tour Schedule (Static Example) -->
+                    <div class="tour-schedule">
+                        <h2><i class="fas fa-list-ol"></i> Lịch trình dự kiến</h2>
+                        <div class="schedule-content">
+                            <div class="schedule-item">
+                                <div class="schedule-day">Ngày 1</div>
+                                <div class="schedule-info">
+                                    <h4>Khởi hành & Di chuyển</h4>
+                                    <p>Đoàn tập trung tại điểm hẹn, khởi hành đi @Model.getDestination().</p>
+                                </div>
+                            </div>
+                            <div class="schedule-item">
+                                <div class="schedule-day">Ngày @(Model.getDuration() > 1 ? "2" : "cuối")</div>
+                                <div class="schedule-info">
+                                    <h4>Khám phá @Model.getDestination()</h4>
+                                    <p>Tham quan các điểm du lịch nổi tiếng tại @Model.getDestination().</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tour Policy (Static from Ref) -->
+                    <div class="tour-policy">
+                        <h2><i class="fas fa-shield-alt"></i> Chính sách tour</h2>
+                        <div class="policy-content">
+                            <div class="policy-item">
+                                <h4><i class="fas fa-ban"></i> Bao gồm</h4>
+                                <ul>
+                                    <li>Vé tham quan theo lịch trình</li>
+                                    <li>Hướng dẫn viên tiếng Việt nhiệt tình</li>
+                                    <li>Bảo hiểm du lịch</li>
+                                    <li>Xe ô tô du lịch điều hòa</li>
+                                </ul>
+                            </div>
+                            <div class="policy-item">
+                                <h4><i class="fas fa-exclamation-triangle"></i> Không bao gồm</h4>
+                                <ul>
+                                    <li>Chi phí cá nhân</li>
+                                    <li>Thuế VAT</li>
+                                    <li>Tip hướng dẫn viên và tài xế</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <!-- Right Column: Booking Box -->
+                <aside class="tour-detail-sidebar">
+                    <div class="booking-card">
+                        <div class="booking-price">
+                            <span class="price-label">Giá tour</span>
+                            <div class="price-value">
+                                @Model.getFormattedPrice()
+                            </div>
+                            <span class="price-note">/ người lớn</span>
+                        </div>
+                        <div class="booking-info">
+                            <div class="info-row">
+                                <span class="info-icon"><i class="far fa-calendar-alt"></i></span>
+                                <span class="info-text">Khởi hành: <strong>@Model.getFormattedDepartureDate()</strong></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon"><i class="fas fa-clock"></i></span>
+                                <span class="info-text">Thời gian: <strong>@Model.getDuration() ngày</strong></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon"><i class="fas fa-map-marker-alt"></i></span>
+                                <span class="info-text">Điểm đến: <strong>@Model.getDestination()</strong></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon"><i class="fas fa-users"></i></span>
+                                <span class="info-text">Còn <strong>@Model.getAvailableSlots()</strong> chỗ</span>
+                            </div>
+                        </div>
+                        @if (Model.getAvailableSlots() > 0)
+                        {
+                            if (isLoggedIn)
+                            {
+                                <form action="@Url.Action("Create", "Booking")" method="post" class="booking-form">
+                                    <input type="hidden" name="tourId" value="@Model.getTourId()">
+                                    <div class="quantity-selector">
+                                        <label for="quantity">Số người lớn</label>
+                                        <div class="quantity-input">
+                                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="@Model.getAvailableSlots()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn-booking">
+                                        <i class="fas fa-shopping-cart"></i> ĐẶT TOUR NGAY
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <div class="login-notice">
+                                    <i class="fas fa-user-lock"></i>
+                                    <h4>Vui lòng đăng nhập để đặt tour</h4>
+                                    <a href="@Url.Action("Login", "Account", new { returnUrl = Context.Request.Path })" class="btn-login-booking">
+                                        <i class="fas fa-sign-in-alt"></i> Đăng nhập ngay
+                                    </a>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="sold-out-notice">
+                                <i class="fas fa-times-circle"></i>
+                                <h4>Tour đã hết chỗ</h4>
+                                <p>Rất tiếc, tour này đã kín chỗ.</p>
+                            </div>
+                        }
+                        <div class="booking-guarantee">
+                            <div class="guarantee-item">
+                                <i class="fas fa-check-circle"></i> <span>Đặt tour dễ dàng</span>
+                            </div>
+                            <div class="guarantee-item">
+                                <i class="fas fa-shield-alt"></i> <span>Bảo mật thông tin</span>
+                            </div>
+                            <div class="guarantee-item">
+                                <i class="fas fa-headset"></i> <span>Hỗ trợ 24/7</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
             </div>
-        }
-    </div>
+            <!-- Related Tours -->
+            @if (relatedTours != null && relatedTours.Any())
+            {
+                <section class="related-tours-section">
+                    <h2><i class="fas fa-compass"></i> Có thể bạn sẽ thích</h2>
+                    <div class="related-tours-grid">
+                        @foreach (var related in relatedTours)
+                        {
+                            <div class="tour-card">
+                                <div class="tour-image">
+                                    <img src="@related.getImageUrl()" alt="@related.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250'">
+                                </div>
+                                <div class="tour-info">
+                                    <div class="tour-destination">
+                                        <i class="fas fa-map-marker-alt"></i> @related.getDestination()
+                                    </div>
+                                    <h3 class="tour-name">
+                                        <a href="@Url.Action("TourDetail", "Home", new { id = related.getTourId() })">@related.getName()</a>
+                                    </h3>
+                                    <div class="tour-footer">
+                                        <div class="tour-price">@related.getFormattedPrice()</div>
+                                        <a href="@Url.Action("TourDetail", "Home", new { id = related.getTourId() })" class="btn btn-view">Xem</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+        </div>
+    </section>
 }
 else
 {
-    <div class="not-found">
-        <h1>Tour không tồn tại</h1>
+    <div class="container" style="padding: 100px 0; text-align: center;">
+        <h2>Tour không tồn tại</h2>
         <a href="@Url.Action("TourList", "Home")" class="btn btn-primary">Quay lại danh sách</a>
     </div>
-}
-
-@section Scripts {
-    <script>
-        function submitBooking() {
-            var tourId = @tour.getTourId();
-            var quantity = document.getElementById('quantity').value;
-            var notes = document.querySelector('textarea[name="notes"]').value;
-            
-            fetch('@Url.Action("Index", "Booking")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'action=create&tourId=' + tourId + '&quantity=' + quantity + '&notes=' + encodeURIComponent(notes)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(data.message);
-                    window.location.href = '@Url.Action("Index", "Booking")';
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra!');
-            });
-        }
-    </script>
 }

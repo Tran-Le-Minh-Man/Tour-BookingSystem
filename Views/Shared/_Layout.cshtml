@@ -3,69 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"] - Tour Booking</title>
+    <title>@ViewData["Title"] - Việt Nam Travel</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+    
+    <!-- Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/header.css">
     <link rel="stylesheet" href="~/css/footer.css">
     <link rel="stylesheet" href="~/css/HomePage.css">
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="logo">
-                <a href="@Url.Action("Index", "Home")">TourBooking</a>
+    @{
+        var currentUrl = Context.Request.Path;
+        var userId = ViewData["userId"];
+        var fullName = ViewData["fullName"];
+        var role = ViewData["role"]?.ToString();
+        var isLoggedIn = userId != null;
+    }
+    <header class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="@Url.Action("Index", "Home")">
+                    <span class="logo-text">Việt Nam</span> Travel
+                </a>
             </div>
-            <ul class="nav-links">
-                <li><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
-                <li><a href="@Url.Action("TourList", "Home")">Du lịch</a></li>
-                @if (ViewData["userId"] != null)
-                {
-                    <li><a href="@Url.Action("Index", "Booking")">Đặt tour</a></li>
-                }
-                @if ("ADMIN".Equals(ViewData["role"]?.ToString(), StringComparison.OrdinalIgnoreCase))
-                {
-                    <li><a href="@Url.Action("Index", "Admin")">Quản trị</a></li>
-                }
-            </ul>
-            <div class="auth-buttons">
-                @if (ViewData["userId"] != null)
-                {
-                    <span class="user-name">Xin chào, @ViewData["fullName"]</span>
-                    <a href="@Url.Action("Logout", "Account")" class="btn btn-logout">Đăng xuất</a>
-                }
-                else
-                {
-                    <a href="@Url.Action("Login", "Account")" class="btn btn-login">Đăng nhập</a>
-                    <a href="@Url.Action("Register", "Account")" class="btn btn-register">Đăng ký</a>
-                }
+            <nav class="nav-menu">
+                <ul>
+                    <li>
+                        <a href="@Url.Action("Index", "Home")" class="@(currentUrl.Value == "/" || currentUrl.Value.Contains("Home") ? "active" : "")">
+                            Trang chủ
+                        </a>
+                    </li>
+                    @if (isLoggedIn && "USER".Equals(role, StringComparison.OrdinalIgnoreCase))
+                    {
+                        <li>
+                            <a href="@Url.Action("TourList", "Home")" class="@(currentUrl.Value.Contains("TourList") ? "active" : "")">
+                                Tất cả tour
+                            </a>
+                        </li>
+                    }
+                    @if (isLoggedIn)
+                    {
+                        @if ("USER".Equals(role, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <li>
+                                <a href="@Url.Action("Index", "Favorites")" class="@(currentUrl.Value.Contains("Favorites") ? "active" : "")">
+                                    <i class="fas fa-heart"></i> Yêu thích
+                                </a>
+                            </li>
+                            <li>
+                                <a href="@Url.Action("Index", "Booking")" class="@(currentUrl.Value.Contains("Booking") ? "active" : "")">
+                                    <i class="fas fa-shopping-cart"></i> Giỏ hàng
+                                </a>
+                            </li>
+                        }
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle">
+                                <i class="fas fa-user-cog"></i> Cài đặt <i class="fas fa-chevron-down"></i>
+                            </a>
+                            <div class="dropdown-menu">
+                                <a href="@Url.Action("EditProfile", "Account")">
+                                    <i class="fas fa-user-edit"></i> Chỉnh sửa thông tin
+                                </a>
+                                <a href="@Url.Action("Logout", "Account")">
+                                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                </a>
+                                @if ("ADMIN".Equals(role, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <a href="@Url.Action("Index", "Admin")">
+                                        <i class="fas fa-cogs"></i> Trang quản trị
+                                    </a>
+                                }
+                            </div>
+                        </li>
+                        <li class="user-greeting">
+                            <span>Xin chào, <strong class="user_name">@fullName</strong></span>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a href="@Url.Action("Login", "Account")" class="@(currentUrl.Value.Contains("Login") ? "active" : "")">
+                                Đăng nhập
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Register", "Account")" class="btn-nav-register">
+                                Đăng ký
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+            <div class="nav-toggle">
+                <span></span> <span></span> <span></span>
             </div>
-        </nav>
+        </div>
     </header>
     <main>
         @RenderBody()
     </main>
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>TourBooking</h3>
-                <p>Hệ thống đặt tour du lịch hàng đầu Việt Nam</p>
-            </div>
-            <div class="footer-section">
-                <h3>Liên hệ</h3>
-                <p>Email: contact@tourbooking.com</p>
-                <p>Điện thoại: 0123 456 789</p>
-            </div>
-            <div class="footer-section">
-                <h3>Link nhanh</h3>
-                <p><a href="@Url.Action("Index", "Home")">Trang chủ</a></p>
-                <p><a href="@Url.Action("TourList", "Home")">Danh sách tour</a></p>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 TourBooking. All rights reserved.</p>
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Việt Nam Travel - Website đặt tour du lịch nội địa</p>
+            <p>Đồ án lập trình web - <strong>Clone Version</strong></p>
         </div>
     </footer>
-    <script src="~/js/main.js"></script>
+    <script>
+        document.querySelector('.nav-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-menu').classList.toggle('active');
+        });
+    </script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

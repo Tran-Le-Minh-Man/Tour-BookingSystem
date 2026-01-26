@@ -1,45 +1,69 @@
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = null;
     ViewData["Title"] = "Đăng nhập";
 }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Việt Nam Travel</title>
+    <link rel="stylesheet" href="~/css/Auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-image: url('../images/Login.png');
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>Việt Nam Travel</h1>
+            <p>Chào mừng quay lại! Đăng nhập để tiếp tục hành trình</p>
+        </div>
+        <div class="auth-body">
+            <!-- Hiển thị thông báo thành công (màu xanh) -->
+            @if (ViewData["success"] != null)
+            {
+                <div class="success-message">@ViewData["success"]</div>
+            }
+            <!-- Hiển thị thông báo lỗi (màu đỏ) -->
+            @if (ViewData["error"] != null)
+            {
+                <div class="error-message">@Html.Raw(ViewData["error"])</div>
+            }
+            <form action="@Url.Action("Login", "Account")" method="post">
+                <!-- Standard AntiForgeryToken for [ValidateAntiForgeryToken] -->
+                @Html.AntiForgeryToken()
+                <!-- CSRF Token for manual controller check -->
+                <input type="hidden" name="_csrf_token" value="@ViewData["_csrf_token"]" />
 
-<div class="login-container">
-    <div class="login-box">
-        <h2>Đăng nhập</h2>
-        
-        @if (ViewData["error"] != null)
-        {
-            <div class="alert alert-danger">@ViewData["error"]</div>
-        }
-        
-        @if (ViewData["success"] != null)
-        {
-            <div class="alert alert-success">@ViewData["success"]</div>
-        }
-        
-        <form action="@Url.Action("Login", "Account")" method="post">
-            <input type="hidden" name="_csrf_token" value="@ViewData["_csrf_token"]" />
-            
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="@ViewData["email"]" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Mật khẩu</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            
-            <div class="form-group checkbox">
-                <input type="checkbox" id="remember" name="remember">
-                <label for="remember">Ghi nhớ đăng nhập</label>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Đăng nhập</button>
-        </form>
-        
-        <div class="login-footer">
-            <p>Chưa có tài khoản? <a href="@Url.Action("Register", "Account")">Đăng ký ngay</a></p>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required
+                           placeholder="you@example.com"
+                           value="@ViewData["email"]">
+                </div>
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu">
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <label style="font-weight:normal; font-size:0.9rem;">
+                        <input type="checkbox" name="remember" id="remember">
+                        Ghi nhớ đăng nhập
+                    </label>
+                    <a href="#" style="font-size:0.9rem; color:#0C67B3;">Quên mật khẩu?</a>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                </button>
+            </form>
+        </div>
+        <div class="auth-footer">
+            Chưa có tài khoản? <a href="@Url.Action("Register", "Account")">Đăng ký miễn phí</a>
         </div>
     </div>
-</div>
+</body>
+</html>

@@ -2,88 +2,175 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Trang chủ";
     var featuredTours = ViewData["featuredTours"] as List<TourBookingSystem.Models.Tour>;
-    var destinations = ViewData["destinations"] as List<string>;
 }
-<div class="home-page">
-    <!-- Hero Section -->
-    <section class="hero">
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="container">
         <div class="hero-content">
-            <h1>Khám phá những điểm đến tuyệt vời</h1>
-            <p>Đặt tour du lịch ngay hôm nay để nhận ưu đãi hấp dẫn</p>
-            <a href="@Url.Action("TourList", "Home")" class="btn btn-primary">Xem tour ngay</a>
-        </div>
-    </section>
-    
-    <!-- Search Section -->
-    <section class="search-section">
-        <div class="search-box">
-            <form action="@Url.Action("TourList", "Home")" method="get">
-                <div class="search-row">
-                    <div class="search-field">
-                        <label>Từ khóa</label>
-                        <input type="text" name="keyword" placeholder="Tìm tour...">
-                    </div>
-                    <div class="search-field">
-                        <label>Điểm đến</label>
-                        <select name="destination">
-                            <option value="">Tất cả điểm đến</option>
-                            @foreach (var dest in destinations)
-                            {
-                                <option value="@dest">@dest</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="search-field">
-                        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
-                    </div>
+            <h1>Khám Phá Biển Đảo Việt Nam</h1>
+            <p class="lead">Hành trình tuyệt vời cùng nắng vàng, biển xanh và cát trắng</p>
+            <form action="@Url.Action("TourList", "Home")" method="get" class="search-form">
+                <div class="input-group">
+                    <input type="text" name="keyword" placeholder="Đi đâu? (Phú Quốc, Nha Trang...)">
+                    <input type="date" name="date">
+                    <button type="submit">
+                        <i class="fas fa-search"></i> Tìm Tour
+                    </button>
                 </div>
             </form>
         </div>
-    </section>
-    
-    <!-- Featured Tours -->
-    <section class="featured-tours">
-        <h2>Tour nổi bật</h2>
-        <div class="tour-grid">
-            @if (featuredTours != null && featuredTours.Count > 0)
+    </div>
+</section>
+<!-- ================== PHẦN 1: TOUR NỔI BẬT ================== -->
+<section class="featured-tours">
+    <div class="container">
+        <h2 class="section-title">Tour Nổi Bật</h2>
+        <div class="tours-grid">
+            @if (featuredTours != null && featuredTours.Any())
             {
                 foreach (var tour in featuredTours)
                 {
                     <div class="tour-card">
-                        <img src="@tour.getImageUrl()" alt="@tour.getName()">
+                        <div class="tour-image">
+                            <img src="@tour.getImageUrl()" alt="@tour.getName()">
+                        </div>
                         <div class="tour-info">
                             <h3>@tour.getName()</h3>
-                            <p class="destination">@tour.getDestination()</p>
-                            <p class="duration">@tour.getDuration() ngày</p>
+                            <p class="duration">
+                                <i class="fas fa-clock"></i> @tour.getDuration() ngày
+                            </p>
                             <p class="price">@tour.getFormattedPrice()</p>
-                            <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })" class="btn btn-secondary">Chi tiết</a>
+                            <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })" class="btn">Xem chi tiết</a>
                         </div>
                     </div>
                 }
             }
             else
             {
-                <p class="no-tours">Chưa có tour nào</p>
+                <p class="text-center">Hiện không có tour nổi bật nào.</p>
             }
         </div>
-    </section>
-    
-    <!-- Why Choose Us -->
-    <section class="why-choose-us">
-        <h2>Tại sao chọn chúng tôi</h2>
-        <div class="features">
-            <div class="feature">
-                <h3>Giá tốt nhất</h3>
-                <p>Cam kết giá tour tốt nhất thị trường</p>
+        <div class="center">
+            <a href="@Url.Action("TourList", "Home")" class="btn btn-large">Xem tất cả tour</a>
+        </div>
+    </div>
+</section>
+<!-- ================== PHẦN 2: KHUYẾN MÃI NỔI BẬT ================== -->
+<section class="promo">
+    <div class="container">
+        <h2 class="section-title text-center">
+            Khuyến Mãi <span class="highlight">Hot</span> Trong Tuần
+        </h2>
+        <div class="promo-grid">
+            <div class="promo-card">
+                <div class="badge">GIẢM 20%</div>
+                <img src="~/Images/KMNhaTrang.png" alt="Nha Trang">
+                <div class="promo-info">
+                    <h3>Nha Trang 4N3Đ - Vinpearl + Lặn biển</h3>
+                    <p class="old-price">8.500.000đ</p>
+                    <p class="new-price">6.800.000đ</p>
+                    <p class="countdown">
+                        <i class="fas fa-clock"></i> Còn 2 ngày
+                    </p>
+                    <a href="@Url.Action("TourList", "Home")" class="btn">Đặt ngay</a>
+                </div>
             </div>
-            <div class="feature">
-                <h3>Dịch vụ chất lượng</h3>
-                <p>Đội ngũ hướng dẫn viên chuyên nghiệp</p>
-            </div>
-            <div class="feature">
-                <h3>An toàn tuyệt đối</h3>
-                <p>Bảo hiểm du lịch toàn diện</p>
+            <div class="promo-card">
+                <div class="badge">CÒN 3 CHỖ</div>
+                <img src="~/Images/KMPhuQuoc.jpg" alt="Phú Quốc">
+                <div class="promo-info">
+                    <h3>Phú Quốc Bay Thẳng - Resort 5*</h3>
+                    <p class="old-price">12.900.000đ</p>
+                    <p class="new-price">11.900.000đ</p>
+                    <p class="countdown text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Sắp hết chỗ!
+                    </p>
+                    <a href="@Url.Action("TourList", "Home")" class="btn">Đặt ngay</a>
+                </div>
             </div>
         </div>
-    </section>
-</div>
+    </div>
+</section>
+<!-- ================== PHẦN 3: ĐÁNH GIÁ KHÁCH HÀNG ================== -->
+<section class="testimonials">
+    <div class="container">
+        <h2 class="section-title text-center">Khách Hàng Nói Gì?</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="quote">"Tour Phú Quốc quá tuyệt! Biển đẹp, ăn ngon, hướng dẫn viên vui tính. Sẽ đi tiếp!"</p>
+                <div class="author">
+                    <img src="~/Images/avatar1.jpg" alt="Nguyễn Lan">
+                    <div>
+                        <strong>Nguyễn Lan</strong><br> <small>Đi tour tháng 10/2025</small>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="quote">"Dịch vụ chuyên nghiệp, xe đưa đón đúng giờ. Rất hài lòng!"</p>
+                <div class="author">
+                    <img src="~/Images/avatar2.png" alt="Trần Minh">
+                    <div>
+                        <strong>Trần Minh</strong><br> <small>Đi tour Nha Trang</small>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                </div>
+                <p class="quote">"Ổn, nhưng nên cải thiện thời gian ăn trưa. Còn lại tốt!"</p>
+                <div class="author">
+                    <img src="~/Images/avatar3.png" alt="Lê Hương">
+                    <div>
+                        <strong>Lê Hương</strong><br> <small>Đi tour Đà Nẵng</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- ================== PHẦN 4: TẠI SAO CHỌN CHÚNG TÔI ================== -->
+<section class="why-choose py-5">
+    <div class="container">
+        <h2 class="section-title text-center">
+            Tại Sao Chọn <span class="highlight">Việt Nam Travel</span>?
+        </h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <h3>Giá Tốt Nhất</h3>
+                <p>Cam kết giá cạnh tranh, không phí ẩn. So sánh để thấy sự khác biệt!</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3>Hỗ Trợ 24/7</h3>
+                <p>Tư vấn miễn phí trước, trong và sau chuyến đi. Luôn sẵn sàng!</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h3>Hướng Dẫn Viên Chuyên Nghiệp</h3>
+                <p>Đội ngũ HDV giàu kinh nghiệm, nhiệt tình, am hiểu địa phương.</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Đảm Bảo Hoàn Tiền</h3>
+                <p>Hủy tour trước 48h → hoàn 100%. An tâm đặt chỗ!</p>
+            </div>
+        </div>
+    </div>
+</section>

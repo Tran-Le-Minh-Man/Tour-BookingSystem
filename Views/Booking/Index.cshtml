@@ -6,7 +6,6 @@
     var confirmedBookings = ViewData["confirmedBookings"] as List<TourBookingSystem.Models.Booking>;
     var totalBookings = (int?)ViewData["totalBookings"] ?? 0;
 }
-
 <div class="booking-page">
     <div class="page-header">
         <h1>Đặt tour của tôi</h1>
@@ -80,7 +79,6 @@
         }
     </div>
 </div>
-
 <style>
     .booking-tabs {
         display: flex;
@@ -125,7 +123,6 @@
         color: #dc3545;
     }
 </style>
-
 <script>
     function showTab(status) {
         // Update active tab

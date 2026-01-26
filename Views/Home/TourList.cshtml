@@ -1,133 +1,175 @@
+@using TourBookingSystem.Models
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Danh sách tour";
-    var tours = ViewData["tours"] as List<TourBookingSystem.Models.Tour>;
+    ViewData["Title"] = "Tất cả Tour Du Lịch";
+    var tours = ViewData["tours"] as List<Tour>;
     var destinations = ViewData["destinations"] as List<string>;
+    var selectedDestination = ViewData["selectedDestination"] as string;
+    var searchKeyword = ViewData["searchKeyword"] as string;
+    var departureDate = ViewData["departureDate"] as string;
+    var selectedMinPrice = ViewData["minPrice"] as decimal?;
+    var selectedMaxPrice = ViewData["maxPrice"] as decimal?;
+    var selectedDuration = ViewData["duration"] as int?;
+    var selectedSortBy = ViewData["sortBy"] as string;
 }
-
-<div class="tour-list-page">
-    <div class="page-header">
-        <h1>Danh sách tour du lịch</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/css/tour_list.css">
+}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1>Khám Phá Các Tour Du Lịch</h1>
+        <p class="lead">Hành trình tuyệt vời chờ đợi bạn</p>
     </div>
-    
-    <div class="content-wrapper">
-        <!-- Sidebar Filter -->
-        <aside class="sidebar">
-            <div class="filter-section">
-                <h3>Tìm kiếm</h3>
-                <form action="@Url.Action("TourList", "Home")" method="get">
-                    <div class="form-group">
-                        <label>Từ khóa</label>
-                        <input type="text" name="keyword" value="@ViewData["keyword"]" placeholder="Tên tour, điểm đến...">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Điểm đến</label>
-                        <select name="destination">
-                            <option value="">Tất cả</option>
-                            <option value="all">Tất cả điểm đến</option>
-                            @foreach (var dest in destinations)
-                            {
-                                <option value="@dest" @(ViewData["destination"]?.ToString() == dest ? "selected" : "")>@dest</option>
-                            }
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Giá từ</label>
-                        <input type="number" name="minPrice" value="@ViewData["minPrice"]" placeholder="Giá thấp nhất">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Giá đến</label>
-                        <input type="number" name="maxPrice" value="@ViewData["maxPrice"]" placeholder="Giá cao nhất">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Thời gian</label>
-                        <select name="duration">
-                            <option value="">Tất cả</option>
-                            <option value="all">Tất cả thời gian</option>
-                            <option value="1" @(ViewData["duration"]?.ToString() == "1" ? "selected" : "")>1 ngày</option>
-                            <option value="2" @(ViewData["duration"]?.ToString() == "2" ? "selected" : "")>2 ngày</option>
-                            <option value="3" @(ViewData["duration"]?.ToString() == "3" ? "selected" : "")>3 ngày</option>
-                            <option value="4" @(ViewData["duration"]?.ToString() == "4" ? "selected" : "")>4 ngày</option>
-                            <option value="5" @(ViewData["duration"]?.ToString() == "5" ? "selected" : "")>5 ngày</option>
-                        </select>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">Tìm kiếm</button>
-                    <a href="@Url.Action("TourList", "Home")" class="btn btn-secondary">Xóa lọc</a>
-                </form>
-            </div>
-        </aside>
-        
-        <!-- Tour List -->
-        <main class="tour-list">
-            @if (tours != null && tours.Count > 0)
-            {
-                <div class="tour-count">Tìm thấy @tours.Count tour</div>
-                <div class="tour-grid">
-                    @foreach (var tour in tours)
-                    {
-                        <div class="tour-card">
-                            <img src="@tour.getImageUrl()" alt="@tour.getName()">
-                            <div class="tour-info">
-                                <h3>@tour.getName()</h3>
-                                <p class="destination">📍 @tour.getDestination()</p>
-                                <p class="duration">⏱ @tour.getDuration() ngày</p>
-                                <p class="departure-date">📅 @tour.getFormattedDepartureDate()</p>
-                                <p class="price">💰 @tour.getFormattedPrice()</p>
-                                <p class="available">Còn @tour.getAvailableSlots() chỗ</p>
-                                <div class="tour-actions">
-                                    <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })" class="btn btn-secondary">Chi tiết</a>
-                                    @if (ViewData["userId"] != null)
-                                    {
-                                        <button class="btn btn-primary" onclick="bookTour(@tour.getTourId())">Đặt ngay</button>
-                                    }
-                                </div>
+</section>
+<!-- Main Content -->
+<section class="tour-list-section">
+    <div class="container">
+        <div class="tour-list-layout">
+            <!-- Sidebar Filters -->
+            <aside class="filters-sidebar">
+                <div class="filter-card">
+                    <h3>
+                        <i class="fas fa-filter"></i> Bộ Lọc Tìm Kiếm
+                    </h3>
+                    <form action="@Url.Action("TourList", "Home")" method="get" class="filter-form">
+                        <!-- Search by keyword -->
+                        <div class="filter-group">
+                            <label for="keyword">Từ khóa</label>
+                            <div class="search-input-wrapper">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="keyword" name="keyword" placeholder="Tên tour, địa điểm..." value="@searchKeyword">
                             </div>
                         </div>
+                        <!-- Destination filter -->
+                        <div class="filter-group">
+                            <label for="destination">Điểm đến</label>
+                            <select id="destination" name="destination">
+                                <option value="">Tất cả điểm đến</option>
+                                @if (destinations != null)
+                                {
+                                    foreach (var dest in destinations)
+                                    {
+                                        <option value="@dest" selected="@(selectedDestination == dest)">@dest</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <!-- Departure Date filter -->
+                        <div class="filter-group">
+                            <label for="departure_date">Ngày khởi hành</label>
+                            <input type="date" id="departure_date" name="departure_date" value="@departureDate">
+                        </div>
+                        <!-- Price range filter -->
+                        <div class="filter-group">
+                            <label>Khoảng giá</label>
+                            <div class="price-inputs">
+                                <input type="number" name="minPrice" placeholder="Tối thiểu" value="@selectedMinPrice" min="0">
+                                <span>-</span>
+                                <input type="number" name="maxPrice" placeholder="Tối đa" value="@selectedMaxPrice" min="0">
+                            </div>
+                        </div>
+                        <!-- Duration filter -->
+                        <div class="filter-group">
+                            <label for="duration">Thời gian</label>
+                            <select id="duration" name="duration">
+                                <option value="">Tất cả</option>
+                                <option value="1" selected="@(selectedDuration == 1)">1 ngày</option>
+                                <option value="2" selected="@(selectedDuration == 2)">2 ngày 1 đêm</option>
+                                <option value="3" selected="@(selectedDuration == 3)">3 ngày 2 đêm</option>
+                                <option value="4" selected="@(selectedDuration == 4)">4 ngày 3 đêm</option>
+                                <option value="5" selected="@(selectedDuration == 5)">5 ngày 4 đêm</option>
+                                <option value="7" selected="@(selectedDuration == 7)">Trên 5 ngày</option>
+                            </select>
+                        </div>
+                        <!-- Sort by -->
+                        <div class="filter-group">
+                            <label for="sortBy">Sắp xếp theo</label>
+                            <select id="sortBy" name="sortBy">
+                                <option value="">Mặc định</option>
+                                <option value="price_asc" selected="@(selectedSortBy == "price_asc")">Giá: Thấp đến cao</option>
+                                <option value="price_desc" selected="@(selectedSortBy == "price_desc")">Giá: Cao đến thấp</option>
+                                <option value="date_asc" selected="@(selectedSortBy == "date_asc")">Ngày khởi hành: Sớm nhất</option>
+                                <option value="date_desc" selected="@(selectedSortBy == "date_desc")">Ngày khởi hành: Mới nhất</option>
+                                <option value="duration_asc" selected="@(selectedSortBy == "duration_asc")">Thời gian: Ngắn nhất</option>
+                                <option value="duration_desc" selected="@(selectedSortBy == "duration_desc")">Thời gian: Dài nhất</option>
+                            </select>
+                        </div>
+                        <!-- Filter buttons -->
+                        <div class="filter-buttons">
+                            <button type="submit" class="btn btn-filter">
+                                <i class="fas fa-search"></i> Áp dụng
+                            </button>
+                            <a href="@Url.Action("TourList", "Home")" class="btn btn-reset">
+                                <i class="fas fa-redo"></i> Đặt lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </aside>
+            <!-- Tour Grid -->
+            <main class="tours-main">
+                <!-- Results header -->
+                <div class="results-header">
+                    <div class="results-count">
+                        @if (tours == null || !tours.Any())
+                        {
+                            <p>
+                                <i class="fas fa-info-circle"></i> Không tìm thấy tour nào phù hợp
+                            </p>
+                        }
+                        else
+                        {
+                            <p>
+                                <i class="fas fa-list"></i> Tìm thấy <strong>@tours.Count()</strong> tour du lịch
+                            </p>
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(searchKeyword))
+                    {
                     }
                 </div>
-            }
-            else
-            {
-                <div class="no-results">
-                    <p>Không tìm thấy tour nào phù hợp</p>
-                    <a href="@Url.Action("TourList", "Home")" class="btn btn-primary">Xem tất cả tour</a>
-                </div>
-            }
-        </main>
+        </div>
     </div>
+    }
 </div>
-
+    }
+    else
+    {
+    <div class="no-results">
+        <p>Không tìm thấy tour nào phù hợp</p>
+        <a href="@Url.Action("TourList", "Home")" class="btn btn-primary">Xem tất cả tour</a>
+    </div>
+    }
+</main>
+</div>
+</div>
 @section Scripts {
-    <script>
-        function bookTour(tourId) {
-            var quantity = prompt("Nhập số lượng người:");
-            if (quantity != null && quantity > 0) {
-                fetch('@Url.Action("Index", "Booking")', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'action=create&tourId=' + tourId + '&quantity=' + quantity
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert(data.message);
-                        window.location.href = '@Url.Action("Index", "Booking")';
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra!');
-                });
+        <script>
+            function bookTour(tourId) {
+                var quantity = prompt("Nhập số lượng người:");
+                if (quantity != null && quantity > 0) {
+                    fetch('@Url.Action("Index", "Booking")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'action=create&tourId=' + tourId + '&quantity=' + quantity
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(data.message);
+                            window.location.href = '@Url.Action("Index", "Booking")';
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra!');
+                    });
+                }
             }
-        }
-    </script>
+        </script>
 }

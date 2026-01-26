@@ -1,120 +1,148 @@
-/* Authentication Pages Styles */
+/* Tran le Minh Man - 23130186 */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Pacifico&display=swap');
 
-/* Login Page */
-.login-container {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    /* Updated path for ASP.NET: url('../images/Login.png') assuming css is in wwwroot/css and images in wwwroot/images */
+    /* Wait, the original css used var(--bg-image). I should keep it generic or set a default.
+       The JSP set --bg-image in the style tag of the page. I will do the same in CSHTML.
+    */
+    background: linear-gradient(rgba(12, 103, 179, 0.3), rgba(12, 103, 179, 0.6)), var(--bg-image) center/cover no-repeat fixed;
+    min-height: 100vh;
     display: flex;
-    justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 200px);
-    padding: 20px;
+    padding: 20px 0;
 }
 
-.login-box {
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+.auth-container {
     width: 100%;
-    max-width: 400px;
+    max-width: 480px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
 }
 
-.login-box h2 {
+.auth-header {
+    background: #0C67B3;
+    color: white;
     text-align: center;
-    margin-bottom: 30px;
-    color: #333;
+    padding: 2rem 1rem;
 }
 
-.login-footer {
+    .auth-header h1 {
+        font-family: 'Pacifico', cursive;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-header p {
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+.auth-body {
+    padding: 2.5rem 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.3rem;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid #e0e0e0;
+        border-radius: 50px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0C67B3;
+            box-shadow: 0 0 0 4px rgba(12, 103, 179, 0.15);
+        }
+
+.btn-primary {
+    width: 100%;
+    background: #0C67B3;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 1rem;
+}
+
+    .btn-primary:hover {
+        background: #095a94;
+        transform: translateY(-2px);
+    }
+
+.auth-footer {
     text-align: center;
-    margin-top: 20px;
+    padding: 1.5rem;
+    background: #f8f9fa;
     color: #666;
 }
 
-.login-footer a {
-    color: #007bff;
-    text-decoration: none;
-}
+    .auth-footer a {
+        color: #0C67B3;
+        font-weight: 600;
+        text-decoration: none;
+    }
 
-.login-footer a:hover {
-    text-decoration: underline;
-}
-
-/* Register Page */
-.register-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 200px);
-    padding: 20px;
-}
-
-.register-box {
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    width: 100%;
-    max-width: 500px;
-}
-
-.register-box h2 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #333;
-}
-
-.register-footer {
-    text-align: center;
-    margin-top: 20px;
-    color: #666;
-}
-
-.register-footer a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.register-footer a:hover {
-    text-decoration: underline;
-}
-
-/* Form validation styles */
-.form-group.error input,
-.form-group.error select {
-    border-color: #dc3545;
-}
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
 
 .error-message {
-    color: #dc3545;
-    font-size: 12px;
-    margin-top: 5px;
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    border: 1px solid #f5c6cb;
 }
 
-/* Password strength indicator */
-.password-strength {
-    height: 5px;
-    background: #eee;
-    border-radius: 3px;
-    margin-top: 5px;
-    overflow: hidden;
+.success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border: 1px solid #c3e6cb;
 }
+/* Responsive */
+@media (max-width: 480px) {
+    .auth-container {
+        margin: 10px;
+    }
 
-.password-strength .strength-bar {
-    height: 100%;
-    transition: width 0.3s, background-color 0.3s;
-}
+    .auth-header h1 {
+        font-size: 2rem;
+    }
 
-.password-strength .strength-bar.weak {
-    width: 33%;
-    background: #dc3545;
-}
-
-.password-strength .strength-bar.medium {
-    width: 66%;
-    background: #ffc107;
-}
-
-.password-strength .strength-bar.strong {
-    width: 100%;
-    background: #28a745;
+    .auth-body {
+        padding: 2rem 1.5rem;
+    }
 }
