@@ -60,25 +60,28 @@ namespace TourBookingSystem.Controllers
          */
         [HttpGet]
         public IActionResult TourList(string keyword, string destination, string minPrice, 
-                                       string maxPrice, string duration, string departureDate)
+                                       string maxPrice, string duration, string departure_date, string sortBy)
         {
             try
             {
-                // Get filtered tours
-                List<Tour> tours = tourDAO.getFilteredTours(keyword, destination, minPrice, maxPrice, duration, departureDate);
+                // Get filtered tours with sortBy and departure_date
+                List<Tour> tours = tourDAO.getFilteredTours(keyword, destination, minPrice, maxPrice, duration, departure_date, sortBy);
                 ViewData["tours"] = tours;
                 
                 // Get all destinations for filter
                 List<string> destinations = tourDAO.getAllDestinations();
                 ViewData["destinations"] = destinations;
                 
-                // Pass filter parameters
-                ViewData["keyword"] = keyword;
-                ViewData["destination"] = destination;
-                ViewData["minPrice"] = minPrice;
-                ViewData["maxPrice"] = maxPrice;
-                ViewData["duration"] = duration;
-                ViewData["departureDate"] = departureDate;
+                // Pass filter parameters with correct keys for view
+                ViewData["searchKeyword"] = keyword;
+                ViewData["selectedDestination"] = destination;
+                ViewData["departureDate"] = departure_date;
+                ViewData["selectedSortBy"] = sortBy;
+                
+                // Convert numeric filters for typed view access
+                if (decimal.TryParse(minPrice, out decimal minP)) ViewData["minPrice"] = minP;
+                if (decimal.TryParse(maxPrice, out decimal maxP) ) ViewData["maxPrice"] = maxP;
+                if (int.TryParse(duration, out int dur)) ViewData["duration"] = dur;
                 
             }
             catch (Exception e)
@@ -106,25 +109,38 @@ namespace TourBookingSystem.Controllers
             try
             {
                 tour = tourDAO.findById(id);
-                ViewData["tour"] = tour;
                 
                 // Get related tours (same destination)
                 if (tour != null)
                 {
                     List<Tour> relatedTours = tourDAO.getRelatedTours(tour.getDestination(), id, 4);
                     ViewData["relatedTours"] = relatedTours;
+                    
+                    // Check if tour is in user's favorites
+                    int? userId = HttpContext.Session.GetInt32("userId");
+                    if (userId.HasValue)
+                    {
+                        FavoritesDAO favoritesDAO = new FavoritesDAO();
+                        ViewData["isFavorite"] = favoritesDAO.isFavorite(userId.Value, id);
+                    }
+                    else
+                    {
+                        ViewData["isFavorite"] = false;
+                    }
                 }
                 else
                 {
                     ViewData["relatedTours"] = new List<Tour>();
+                    ViewData["isFavorite"] = false;
                 }
                 
             }
             catch (Exception e)
             {
                 Console.WriteLine("TourDetail error: " + e.Message);
-                ViewData["tour"] = null;
                 ViewData["relatedTours"] = new List<Tour>();
+                ViewData["isFavorite"] = false;
+                tour = null;
             }
             
             // Get user info from session
@@ -132,7 +148,7 @@ namespace TourBookingSystem.Controllers
             ViewData["fullName"] = HttpContext.Session.GetString("fullName");
             ViewData["role"] = HttpContext.Session.GetString("role");
             
-            return View();
+            return View(tour);
         }
     }
 }

@@ -78,7 +78,7 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", id);
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
 
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
@@ -110,7 +110,7 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", email.ToLower().Trim());
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = email.ToLower().Trim() });
 
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
@@ -148,7 +148,7 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", email.ToLower().Trim());
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = email.ToLower().Trim() });
 
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
@@ -239,7 +239,7 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", role);
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = role });
 
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
@@ -271,10 +271,10 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", role);
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = role });
                     string searchPattern = "%" + keyword + "%";
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    stmt.Parameters.AddWithValue("?", searchPattern);
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
 
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
@@ -362,10 +362,10 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", sanitizeString(user.getFullName()));
-                    stmt.Parameters.AddWithValue("?", sanitizeString(user.getPhone()));
-                    stmt.Parameters.AddWithValue("?", user.getRole());
-                    stmt.Parameters.AddWithValue("?", user.getUserId());
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = sanitizeString(user.getFullName()) });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = sanitizeString(user.getPhone()) });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = user.getRole() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = user.getUserId() });
 
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
@@ -389,8 +389,8 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", hashedPassword);
-                    stmt.Parameters.AddWithValue("?", userId);
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = hashedPassword });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
 
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
@@ -412,8 +412,8 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", role);
-                    stmt.Parameters.AddWithValue("?", userId);
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = role });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
 
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
@@ -434,7 +434,7 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", userId);
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
 
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
@@ -455,7 +455,7 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", email.ToLower().Trim());
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = email.ToLower().Trim() });
 
                     object result = stmt.ExecuteScalar();
                     if (result != null)
@@ -481,7 +481,7 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", role);
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = role });
 
                     object result = stmt.ExecuteScalar();
                     if (result != null)
@@ -534,8 +534,8 @@ namespace TourBookingSystem.DAOs
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     string searchPattern = "%" + keyword + "%";
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    stmt.Parameters.AddWithValue("?", searchPattern);
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
 
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
@@ -636,7 +636,7 @@ namespace TourBookingSystem.DAOs
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", userId);
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
 
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;

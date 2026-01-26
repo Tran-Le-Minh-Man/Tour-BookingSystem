@@ -12,23 +12,23 @@ namespace TourBookingSystem.DAOs
      */
     public class BookingDAO
     {
-        private static readonly string TABLE_NAME = "bookings";
-        
+        private static readonly string TABLE_NAME = "[bookings]";
+
         /**
          * Custom exception for database operations
          */
         public class BookingDAOException : Exception
         {
             private readonly string operation;
-            
+
             public BookingDAOException(string operation, string message, Exception cause) : base(message, cause)
             {
                 this.operation = operation;
             }
-            
+
             public string getOperation() { return operation; }
         }
-        
+
         /**
          * Get all bookings with user and tour info
          */
@@ -37,11 +37,11 @@ namespace TourBookingSystem.DAOs
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
                          "t.name as tour_name, t.destination as tour_destination " +
                          "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN users u ON b.user_id = u.id " +
-                         "LEFT JOIN tours t ON b.tour_id = t.id " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "ORDER BY b.id DESC";
             List<Booking> bookings = new List<Booking>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -53,10 +53,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return bookings;
         }
-        
+
         /**
          * Search bookings by keyword (user name, email, tour name, destination)
          */
@@ -65,24 +65,24 @@ namespace TourBookingSystem.DAOs
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
                          "t.name as tour_name, t.destination as tour_destination " +
                          "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN users u ON b.user_id = u.id " +
-                         "LEFT JOIN tours t ON b.tour_id = t.id " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE u.full_name LIKE ? OR u.email LIKE ? " +
                          "OR t.name LIKE ? OR t.destination LIKE ? " +
                          "ORDER BY b.id DESC";
-            
+
             List<Booking> bookings = new List<Booking>();
             string searchPattern = "%" + keyword + "%";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -92,10 +92,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return bookings;
         }
-        
+
         /**
          * Get bookings by status
          */
@@ -104,19 +104,19 @@ namespace TourBookingSystem.DAOs
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
                          "t.name as tour_name, t.destination as tour_destination " +
                          "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN users u ON b.user_id = u.id " +
-                         "LEFT JOIN tours t ON b.tour_id = t.id " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE b.status = ? " +
                          "ORDER BY b.id DESC";
-            
+
             List<Booking> bookings = new List<Booking>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", status);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -126,10 +126,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return bookings;
         }
-        
+
         /**
          * Filter bookings by both status and search keyword
          */
@@ -138,26 +138,26 @@ namespace TourBookingSystem.DAOs
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
                          "t.name as tour_name, t.destination as tour_destination " +
                          "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN users u ON b.user_id = u.id " +
-                         "LEFT JOIN tours t ON b.tour_id = t.id " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE b.status = ? " +
                          "AND (u.full_name LIKE ? OR u.email LIKE ? " +
                          "OR t.name LIKE ? OR t.destination LIKE ?) " +
                          "ORDER BY b.id DESC";
-            
+
             List<Booking> bookings = new List<Booking>();
             string searchPattern = "%" + keyword + "%";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", status);
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -167,10 +167,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return bookings;
         }
-        
+
         /**
          * Find booking by ID
          */
@@ -179,16 +179,16 @@ namespace TourBookingSystem.DAOs
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
                          "t.name as tour_name, t.destination as tour_destination " +
                          "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN users u ON b.user_id = u.id " +
-                         "LEFT JOIN tours t ON b.tour_id = t.id " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE b.id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", id);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         if (rs.Read())
@@ -198,10 +198,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return null;
         }
-        
+
         /**
          * Get bookings by user ID
          */
@@ -211,19 +211,19 @@ namespace TourBookingSystem.DAOs
                          "t.name as tour_name, t.destination as tour_destination, t.image_url as tour_image, " +
                          "t.departure_date as tour_departure, t.duration as tour_duration, t.price as tour_price " +
                          "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN users u ON b.user_id = u.id " +
-                         "LEFT JOIN tours t ON b.tour_id = t.id " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE b.user_id = ? " +
                          "ORDER BY b.id DESC";
-            
+
             List<Booking> bookings = new List<Booking>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", userId);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -233,10 +233,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return bookings;
         }
-        
+
         /**
          * Get bookings by user ID and status
          */
@@ -246,20 +246,20 @@ namespace TourBookingSystem.DAOs
                          "t.name as tour_name, t.destination as tour_destination, t.image_url as tour_image, " +
                          "t.departure_date as tour_departure, t.duration as tour_duration, t.price as tour_price " +
                          "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN users u ON b.user_id = u.id " +
-                         "LEFT JOIN tours t ON b.tour_id = t.id " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE b.user_id = ? AND b.status = ? " +
                          "ORDER BY b.id DESC";
-            
+
             List<Booking> bookings = new List<Booking>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", userId);
-                    stmt.Parameters.AddWithValue("?", status);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -269,10 +269,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return bookings;
         }
-        
+
         /**
          * Create a new booking
          */
@@ -280,21 +280,21 @@ namespace TourBookingSystem.DAOs
         {
             string sql = "INSERT INTO " + TABLE_NAME + " (user_id, tour_id, booking_date, status, num_participants, total_price, notes) " +
                          "VALUES (?, ?, ?, ?, ?, ?, ?)";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", booking.getUserId());
-                    stmt.Parameters.AddWithValue("?", booking.getTourId());
-                    stmt.Parameters.AddWithValue("?", DateTime.Now);
-                    stmt.Parameters.AddWithValue("?", booking.getStatus() != null ? booking.getStatus() : "PENDING");
-                    stmt.Parameters.AddWithValue("?", booking.getNumParticipants());
-                    stmt.Parameters.AddWithValue("?", booking.getTotalPrice());
-                    stmt.Parameters.AddWithValue("?", booking.getNotes() != null ? booking.getNotes() : "");
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = booking.getUserId() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = booking.getTourId() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Date) { Value = DateTime.Now });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = booking.getStatus() != null ? booking.getStatus() : "PENDING" });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = booking.getNumParticipants() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Decimal) { Value = booking.getTotalPrice() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = booking.getNotes() != null ? booking.getNotes() : "" });
+
                     int rowsAffected = stmt.ExecuteNonQuery();
-                    
+
                     if (rowsAffected > 0)
                     {
                         // Get the generated ID
@@ -310,23 +310,23 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
-        
+
         /**
          * Get count of user bookings
          */
         public int countByUserId(int userId)
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE user_id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", userId);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+
                     object result = stmt.ExecuteScalar();
                     if (result != null)
                     {
@@ -334,30 +334,30 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
-        
+
         /**
          * Update booking status
          */
         public bool updateStatus(int id, string status)
         {
             string sql = "UPDATE " + TABLE_NAME + " SET status = ? WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", status.ToUpper());
-                    stmt.Parameters.AddWithValue("?", id);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status.ToUpper() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Confirm a booking
          */
@@ -365,7 +365,7 @@ namespace TourBookingSystem.DAOs
         {
             return updateStatus(id, "CONFIRMED");
         }
-        
+
         /**
          * Cancel a booking
          */
@@ -373,7 +373,7 @@ namespace TourBookingSystem.DAOs
         {
             return updateStatus(id, "CANCELLED");
         }
-        
+
         /**
          * Complete a booking
          */
@@ -381,39 +381,39 @@ namespace TourBookingSystem.DAOs
         {
             return updateStatus(id, "COMPLETED");
         }
-        
+
         /**
          * Delete a booking
          */
         public bool delete(int id)
         {
             string sql = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", id);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Get booking count by status
          */
         public int countByStatus(string status)
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE status = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", status);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status });
+
                     object result = stmt.ExecuteScalar();
                     if (result != null)
                     {
@@ -421,17 +421,17 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
-        
+
         /**
          * Get total booking count
          */
         public int getTotalCount()
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME;
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -443,18 +443,18 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
-        
+
         /**
          * Get total revenue from confirmed/completed bookings
          */
         public decimal getTotalRevenue()
         {
-            string sql = "SELECT COALESCE(SUM(total_price), 0) FROM " + TABLE_NAME + 
+            string sql = "SELECT COALESCE(SUM(total_price), 0) FROM " + TABLE_NAME +
                          " WHERE status IN ('CONFIRMED', 'COMPLETED')";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -466,26 +466,26 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
-        
+
         /**
          * Get revenue by date range
          */
         public decimal getRevenueByDateRange(DateTime startDate, DateTime endDate)
         {
-            string sql = "SELECT COALESCE(SUM(total_price), 0) FROM " + TABLE_NAME + 
+            string sql = "SELECT COALESCE(SUM(total_price), 0) FROM " + TABLE_NAME +
                          " WHERE status IN ('CONFIRMED', 'COMPLETED') " +
                          " AND booking_date BETWEEN ? AND ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", startDate);
-                    stmt.Parameters.AddWithValue("?", endDate);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Date) { Value = startDate });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Date) { Value = endDate });
+
                     object result = stmt.ExecuteScalar();
                     if (result != null && result != DBNull.Value)
                     {
@@ -493,10 +493,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
-        
+
         /**
          * Get recent bookings
          */
@@ -505,23 +505,23 @@ namespace TourBookingSystem.DAOs
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
                          "t.name as tour_name, t.destination as tour_destination " +
                          "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN users u ON b.user_id = u.id " +
-                         "LEFT JOIN tours t ON b.tour_id = t.id " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "ORDER BY b.id DESC";
-            
+
             // For MS Access, use TOP clause
             if (limit > 0)
             {
                 sql = "SELECT TOP " + limit + " b.*, u.full_name as user_name, u.email as user_email, " +
                       "t.name as tour_name, t.destination as tour_destination " +
                       "FROM " + TABLE_NAME + " b " +
-                      "LEFT JOIN users u ON b.user_id = u.id " +
-                      "LEFT JOIN tours t ON b.tour_id = t.id " +
+                      "LEFT JOIN [users] u ON b.user_id = u.id " +
+                      "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                       "ORDER BY b.id DESC";
             }
-            
+
             List<Booking> bookings = new List<Booking>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -533,10 +533,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return bookings;
         }
-        
+
         /**
          * Map ResultSet to Booking object
          */
@@ -546,28 +546,28 @@ namespace TourBookingSystem.DAOs
             booking.setBookingId(Convert.ToInt32(rs["id"]));
             booking.setUserId(Convert.ToInt32(rs["user_id"]));
             booking.setTourId(Convert.ToInt32(rs["tour_id"]));
-            
+
             if (rs["booking_date"] != DBNull.Value)
             {
                 booking.setBookingDate(Convert.ToDateTime(rs["booking_date"]));
             }
-            
+
             booking.setStatus(rs["status"].ToString());
             booking.setNumParticipants(Convert.ToInt32(rs["num_participants"]));
-            
+
             if (rs["total_price"] != DBNull.Value)
             {
                 booking.setTotalPrice(Convert.ToDecimal(rs["total_price"]));
             }
-            
+
             booking.setNotes(rs["notes"] != DBNull.Value ? rs["notes"].ToString() : null);
-            
+
             // Additional display fields
             booking.setUserName(rs["user_name"] != DBNull.Value ? rs["user_name"].ToString() : null);
             booking.setUserEmail(rs["user_email"] != DBNull.Value ? rs["user_email"].ToString() : null);
             booking.setTourName(rs["tour_name"] != DBNull.Value ? rs["tour_name"].ToString() : null);
             booking.setTourDestination(rs["tour_destination"] != DBNull.Value ? rs["tour_destination"].ToString() : null);
-            
+
             // Tour detail fields (may be null for some queries)
             try
             {
@@ -584,7 +584,7 @@ namespace TourBookingSystem.DAOs
             {
                 // Field may not exist in all queries, ignore
             }
-            
+
             return booking;
         }
     }

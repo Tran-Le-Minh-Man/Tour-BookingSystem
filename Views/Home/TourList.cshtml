@@ -10,7 +10,7 @@
     var selectedMinPrice = ViewData["minPrice"] as decimal?;
     var selectedMaxPrice = ViewData["maxPrice"] as decimal?;
     var selectedDuration = ViewData["duration"] as int?;
-    var selectedSortBy = ViewData["sortBy"] as string;
+    var selectedSortOf = ViewData["selectedSortBy"] as string;
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/tour_list.css">
@@ -87,12 +87,12 @@
                             <label for="sortBy">Sắp xếp theo</label>
                             <select id="sortBy" name="sortBy">
                                 <option value="">Mặc định</option>
-                                <option value="price_asc" selected="@(selectedSortBy == "price_asc")">Giá: Thấp đến cao</option>
-                                <option value="price_desc" selected="@(selectedSortBy == "price_desc")">Giá: Cao đến thấp</option>
-                                <option value="date_asc" selected="@(selectedSortBy == "date_asc")">Ngày khởi hành: Sớm nhất</option>
-                                <option value="date_desc" selected="@(selectedSortBy == "date_desc")">Ngày khởi hành: Mới nhất</option>
-                                <option value="duration_asc" selected="@(selectedSortBy == "duration_asc")">Thời gian: Ngắn nhất</option>
-                                <option value="duration_desc" selected="@(selectedSortBy == "duration_desc")">Thời gian: Dài nhất</option>
+                                <option value="price_asc" selected="@(selectedSortOf == "price_asc")">Giá: Thấp đến cao</option>
+                                <option value="price_desc" selected="@(selectedSortOf == "price_desc")">Giá: Cao đến thấp</option>
+                                <option value="date_asc" selected="@(selectedSortOf == "date_asc")">Ngày khởi hành: Sớm nhất</option>
+                                <option value="date_desc" selected="@(selectedSortOf == "date_desc")">Ngày khởi hành: Mới nhất</option>
+                                <option value="duration_asc" selected="@(selectedSortOf == "duration_asc")">Thời gian: Ngắn nhất</option>
+                                <option value="duration_desc" selected="@(selectedSortOf == "duration_desc")">Thời gian: Dài nhất</option>
                             </select>
                         </div>
                         <!-- Filter buttons -->
@@ -109,67 +109,80 @@
             </aside>
             <!-- Tour Grid -->
             <main class="tours-main">
-                <!-- Results header -->
-                <div class="results-header">
-                    <div class="results-count">
-                        @if (tours == null || !tours.Any())
-                        {
-                            <p>
-                                <i class="fas fa-info-circle"></i> Không tìm thấy tour nào phù hợp
-                            </p>
-                        }
-                        else
-                        {
-                            <p>
-                                <i class="fas fa-list"></i> Tìm thấy <strong>@tours.Count()</strong> tour du lịch
-                            </p>
-                        }
-                    </div>
-                    @if (!string.IsNullOrEmpty(searchKeyword))
+                <div class="tours-grid">
+                    @if (tours != null && tours.Any())
                     {
+                        foreach (var tour in tours)
+                        {
+                            <div class="tour-card">
+                                <div class="tour-image">
+                                    <img src="@(tour.getImageUrl()?.StartsWith("http") == true ? tour.getImageUrl() : Url.Content("~/" + tour.getImageUrl()))" alt="@tour.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250'">
+                                </div>
+                                <div class="tour-info">
+                                    <div class="tour-destination">
+                                        @tour.getDestination()
+                                    </div>
+                                    <h3 class="tour-name">
+                                        <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })">@tour.getName()</a>
+                                    </h3>
+                                    <div class="tour-meta">
+                                        <div class="meta-item">
+                                            <span>Khởi hành: @tour.getFormattedDepartureDate()</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span>@tour.getDuration() ngày</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span>Còn @tour.getAvailableSlots() chỗ</span>
+                                        </div>
+                                    </div>
+                                    <div class="tour-footer">
+                                        <div class="tour-price">@tour.getFormattedPrice()</div>
+                                        <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })" class="btn-view">Xem chi tiết</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-results">
+                            <i class="fas fa-search-minus"></i>
+                            <p>Không tìm thấy tour nào phù hợp với yêu cầu của bạn.</p>
+                            <a href="@Url.Action("TourList", "Home")" class="btn btn-primary">Xem tất cả tour</a>
+                        </div>
                     }
                 </div>
+            </main>
         </div>
     </div>
-    }
-</div>
-    }
-    else
-    {
-    <div class="no-results">
-        <p>Không tìm thấy tour nào phù hợp</p>
-        <a href="@Url.Action("TourList", "Home")" class="btn btn-primary">Xem tất cả tour</a>
-    </div>
-    }
-</main>
-</div>
-</div>
+</section>
 @section Scripts {
-        <script>
-            function bookTour(tourId) {
-                var quantity = prompt("Nhập số lượng người:");
-                if (quantity != null && quantity > 0) {
-                    fetch('@Url.Action("Index", "Booking")', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: 'action=create&tourId=' + tourId + '&quantity=' + quantity
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            alert(data.message);
-                            window.location.href = '@Url.Action("Index", "Booking")';
-                        } else {
-                            alert(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra!');
-                    });
-                }
+    <script>
+        function bookTour(tourId) {
+            var quantity = prompt("Nhập số lượng người:");
+            if (quantity != null && quantity > 0) {
+                fetch('@Url.Action("Index", "Booking")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'action=create&tourId=' + tourId + '&quantity=' + quantity
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        window.location.href = '@Url.Action("Index", "Booking")';
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra!');
+                });
             }
-        </script>
+        }
+    </script>
 }

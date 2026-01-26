@@ -223,7 +223,7 @@
                         {
                             <div class="tour-card">
                                 <div class="tour-image">
-                                    <img src="@related.getImageUrl()" alt="@related.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250'">
+                                    <img src="@(related.getImageUrl()?.StartsWith("http") == true ? related.getImageUrl() : Url.Content("~/" + related.getImageUrl()))" alt="@related.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250'">
                                 </div>
                                 <div class="tour-info">
                                     <div class="tour-destination">

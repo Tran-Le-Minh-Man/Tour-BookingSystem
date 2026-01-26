@@ -12,23 +12,23 @@ namespace TourBookingSystem.DAOs
      */
     public class FavoritesDAO
     {
-        private static readonly string TABLE_NAME = "favorites";
-        
+        private static readonly string TABLE_NAME = "[favorites]";
+
         /**
          * Custom exception for database operations
          */
         public class FavoritesDAOException : Exception
         {
             private readonly string operation;
-            
+
             public FavoritesDAOException(string operation, string message, Exception cause) : base(message, cause)
             {
                 this.operation = operation;
             }
-            
+
             public string getOperation() { return operation; }
         }
-        
+
         /**
          * Get all favorites for a user
          */
@@ -37,18 +37,18 @@ namespace TourBookingSystem.DAOs
             string sql = "SELECT f.*, t.name as tour_name, t.destination as tour_destination, " +
                          "t.image_url as tour_image, t.price as tour_price, t.duration as tour_duration " +
                          "FROM " + TABLE_NAME + " f " +
-                         "LEFT JOIN tours t ON f.tour_id = t.id " +
+                         "LEFT JOIN [tours] t ON f.tour_id = t.id " +
                          "WHERE f.user_id = ? " +
                          "ORDER BY f.id DESC";
-            
+
             List<Dictionary<string, object>> favorites = new List<Dictionary<string, object>>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", userId);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -68,24 +68,24 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return favorites;
         }
-        
+
         /**
          * Check if tour is in favorites
          */
         public bool isFavorite(int userId, int tourId)
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE user_id = ? AND tour_id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", userId);
-                    stmt.Parameters.AddWithValue("?", tourId);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tourId });
+
                     object result = stmt.ExecuteScalar();
                     if (result != null)
                     {
@@ -93,10 +93,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return false;
         }
-        
+
         /**
          * Add tour to favorites
          */
@@ -107,56 +107,56 @@ namespace TourBookingSystem.DAOs
             {
                 return true; // Already in favorites
             }
-            
+
             string sql = "INSERT INTO " + TABLE_NAME + " (user_id, tour_id, created_at) VALUES (?, ?, ?)";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", userId);
-                    stmt.Parameters.AddWithValue("?", tourId);
-                    stmt.Parameters.AddWithValue("?", DateTime.Now);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tourId });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Date) { Value = DateTime.Now });
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Remove tour from favorites
          */
         public bool removeFavorite(int userId, int tourId)
         {
             string sql = "DELETE FROM " + TABLE_NAME + " WHERE user_id = ? AND tour_id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", userId);
-                    stmt.Parameters.AddWithValue("?", tourId);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tourId });
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Get favorite count for user
          */
         public int countByUserId(int userId)
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE user_id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", userId);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+
                     object result = stmt.ExecuteScalar();
                     if (result != null)
                     {
@@ -164,7 +164,7 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
     }

@@ -12,23 +12,23 @@ namespace TourBookingSystem.DAOs
      */
     public class TourDAO
     {
-        private static readonly string TABLE_NAME = "tours";
-        
+        private static readonly string TABLE_NAME = "[tours]";
+
         /**
          * Custom exception for database operations
          */
         public class TourDAOException : Exception
         {
             private readonly string operation;
-            
+
             public TourDAOException(string operation, string message, Exception cause) : base(message, cause)
             {
                 this.operation = operation;
             }
-            
+
             public string getOperation() { return operation; }
         }
-        
+
         /**
          * Get all tours
          * @return list of all tours
@@ -37,7 +37,7 @@ namespace TourBookingSystem.DAOs
         {
             string sql = "SELECT * FROM " + TABLE_NAME + " ORDER BY id DESC";
             List<Tour> tours = new List<Tour>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -49,10 +49,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return tours;
         }
-        
+
         /**
          * Get tours by status
          * @param status the status to filter (ACTIVE, INACTIVE)
@@ -62,13 +62,13 @@ namespace TourBookingSystem.DAOs
         {
             string sql = "SELECT * FROM " + TABLE_NAME + " WHERE status = ? ORDER BY id DESC";
             List<Tour> tours = new List<Tour>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", status);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -78,10 +78,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return tours;
         }
-        
+
         /**
          * Get active tours for customers
          * @return list of active tours
@@ -90,7 +90,7 @@ namespace TourBookingSystem.DAOs
         {
             return getToursByStatus("ACTIVE");
         }
-        
+
         /**
          * Find tour by ID
          * @param id the tour ID
@@ -99,13 +99,13 @@ namespace TourBookingSystem.DAOs
         public Tour findById(int id)
         {
             string sql = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", id);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         if (rs.Read())
@@ -115,10 +115,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return null;
         }
-        
+
         /**
          * Search tours by name or destination
          * @param keyword the search keyword
@@ -126,19 +126,19 @@ namespace TourBookingSystem.DAOs
          */
         public List<Tour> searchTours(string keyword)
         {
-            string sql = "SELECT * FROM " + TABLE_NAME + 
+            string sql = "SELECT * FROM " + TABLE_NAME +
                          " WHERE name LIKE ? OR destination LIKE ? " +
                          "ORDER BY id DESC";
             List<Tour> tours = new List<Tour>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     string searchPattern = "%" + keyword + "%";
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    stmt.Parameters.AddWithValue("?", searchPattern);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -148,10 +148,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return tours;
         }
-        
+
         /**
          * Insert a new tour
          * @param tour the tour to insert
@@ -159,41 +159,33 @@ namespace TourBookingSystem.DAOs
          */
         public bool insert(Tour tour)
         {
-            string sql = "INSERT INTO " + TABLE_NAME + 
+            string sql = "INSERT INTO " + TABLE_NAME +
                          " (name, description, destination, departure_date, duration, price, " +
                          "max_participants, current_participants, image_url, status) " +
                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getName()));
-                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getDescription()));
-                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getDestination()));
-                    
-                    if (tour.getDepartureDate() != null)
-                    {
-                        stmt.Parameters.AddWithValue("?", tour.getDepartureDate());
-                    }
-                    else
-                    {
-                        stmt.Parameters.AddWithValue("?", DBNull.Value);
-                    }
-                    
-                    stmt.Parameters.AddWithValue("?", tour.getDuration());
-                    stmt.Parameters.AddWithValue("?", tour.getPrice());
-                    stmt.Parameters.AddWithValue("?", tour.getMaxParticipants());
-                    stmt.Parameters.AddWithValue("?", tour.getCurrentParticipants());
-                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getImageUrl()));
-                    stmt.Parameters.AddWithValue("?", tour.getStatus() != null ? tour.getStatus() : "ACTIVE");
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = sanitizeString(tour.getName()) });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = sanitizeString(tour.getDescription()) });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = sanitizeString(tour.getDestination()) });
+
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Date) { Value = (object)tour.getDepartureDate() ?? DBNull.Value });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tour.getDuration() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Decimal) { Value = tour.getPrice() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tour.getMaxParticipants() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tour.getCurrentParticipants() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = sanitizeString(tour.getImageUrl()) });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = tour.getStatus() != null ? tour.getStatus() : "ACTIVE" });
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Update an existing tour
          * @param tour the tour to update
@@ -201,43 +193,35 @@ namespace TourBookingSystem.DAOs
          */
         public bool update(Tour tour)
         {
-            string sql = "UPDATE " + TABLE_NAME + 
+            string sql = "UPDATE " + TABLE_NAME +
                          " SET name = ?, description = ?, destination = ?, " +
                          "departure_date = ?, duration = ?, price = ?, " +
                          "max_participants = ?, current_participants = ?, " +
                          "image_url = ?, status = ? WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getName()));
-                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getDescription()));
-                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getDestination()));
-                    
-                    if (tour.getDepartureDate() != null)
-                    {
-                        stmt.Parameters.AddWithValue("?", tour.getDepartureDate());
-                    }
-                    else
-                    {
-                        stmt.Parameters.AddWithValue("?", DBNull.Value);
-                    }
-                    
-                    stmt.Parameters.AddWithValue("?", tour.getDuration());
-                    stmt.Parameters.AddWithValue("?", tour.getPrice());
-                    stmt.Parameters.AddWithValue("?", tour.getMaxParticipants());
-                    stmt.Parameters.AddWithValue("?", tour.getCurrentParticipants());
-                    stmt.Parameters.AddWithValue("?", sanitizeString(tour.getImageUrl()));
-                    stmt.Parameters.AddWithValue("?", tour.getStatus());
-                    stmt.Parameters.AddWithValue("?", tour.getTourId());
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = sanitizeString(tour.getName()) });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = sanitizeString(tour.getDescription()) });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = sanitizeString(tour.getDestination()) });
+
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Date) { Value = (object)tour.getDepartureDate() ?? DBNull.Value });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tour.getDuration() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Decimal) { Value = tour.getPrice() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tour.getMaxParticipants() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tour.getCurrentParticipants() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = sanitizeString(tour.getImageUrl()) });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = tour.getStatus() });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tour.getTourId() });
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Delete a tour by ID
          * @param id the tour ID to delete
@@ -246,19 +230,19 @@ namespace TourBookingSystem.DAOs
         public bool delete(int id)
         {
             string sql = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", id);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Update tour status
          * @param id the tour ID
@@ -268,20 +252,20 @@ namespace TourBookingSystem.DAOs
         public bool updateStatus(int id, string status)
         {
             string sql = "UPDATE " + TABLE_NAME + " SET status = ? WHERE id = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", status);
-                    stmt.Parameters.AddWithValue("?", id);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
+
                     int rowsAffected = stmt.ExecuteNonQuery();
                     return rowsAffected > 0;
                 }
             }
         }
-        
+
         /**
          * Get tour count by status
          * @param status the status to count
@@ -290,13 +274,13 @@ namespace TourBookingSystem.DAOs
         public int countByStatus(string status)
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE status = ?";
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", status);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status });
+
                     object result = stmt.ExecuteScalar();
                     if (result != null)
                     {
@@ -304,10 +288,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
-        
+
         /**
          * Get total tour count
          * @return total number of tours
@@ -315,7 +299,7 @@ namespace TourBookingSystem.DAOs
         public int getTotalCount()
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME;
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -327,10 +311,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return 0;
         }
-        
+
         /**
          * Get filtered tours based on various criteria including keyword search
          * @param keyword the keyword to search in tour name and description (null for all)
@@ -341,73 +325,80 @@ namespace TourBookingSystem.DAOs
          * @param departureDate the departure date to filter (null for all)
          * @return list of filtered tours
          */
-        public List<Tour> getFilteredTours(string keyword, string destination, string minPrice, 
-                                            string maxPrice, string duration, string departureDate)
+        public List<Tour> getFilteredTours(string keyword, string destination, string minPrice,
+                                            string maxPrice, string duration, string departureDate, string sortBy = "")
         {
             List<string> conditions = new List<string>();
-            List<object> parameters = new List<object>();
-            
+            List<OleDbParameter> parameters = new List<OleDbParameter>();
+
             // Filter by keyword (search in name and description)
             if (!string.IsNullOrEmpty(keyword) && !keyword.Trim().Equals(""))
             {
                 conditions.Add("(name LIKE ? OR description LIKE ?)");
                 string searchPattern = "%" + keyword.Trim() + "%";
-                parameters.Add(searchPattern);
-                parameters.Add(searchPattern);
+                parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
+                parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
             }
-            
+
             // Filter by destination
             if (!string.IsNullOrEmpty(destination) && !destination.Trim().Equals("") && !destination.Equals("all"))
             {
                 conditions.Add("destination LIKE ?");
-                parameters.Add("%" + destination.Trim() + "%");
+                parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = "%" + destination.Trim() + "%" });
             }
-            
+
             // Filter by minimum price
             if (!string.IsNullOrEmpty(minPrice) && !minPrice.Trim().Equals(""))
             {
                 try
                 {
-                    double minPriceValue = double.Parse(minPrice.Trim());
+                    decimal minPriceValue = decimal.Parse(minPrice.Trim());
                     conditions.Add("price >= ?");
-                    parameters.Add(minPriceValue);
+                    parameters.Add(new OleDbParameter("?", OleDbType.Decimal) { Value = minPriceValue });
                 }
                 catch (FormatException)
                 {
                     // Ignore invalid price values
                 }
             }
-            
+
             // Filter by maximum price
             if (!string.IsNullOrEmpty(maxPrice) && !maxPrice.Trim().Equals(""))
             {
                 try
                 {
-                    double maxPriceValue = double.Parse(maxPrice.Trim());
+                    decimal maxPriceValue = decimal.Parse(maxPrice.Trim());
                     conditions.Add("price <= ?");
-                    parameters.Add(maxPriceValue);
+                    parameters.Add(new OleDbParameter("?", OleDbType.Decimal) { Value = maxPriceValue });
                 }
                 catch (FormatException)
                 {
                     // Ignore invalid price values
                 }
             }
-            
+
             // Filter by duration
             if (!string.IsNullOrEmpty(duration) && !duration.Trim().Equals("") && !duration.Equals("all"))
             {
                 try
                 {
                     int durationValue = int.Parse(duration.Trim());
-                    conditions.Add("duration = ?");
-                    parameters.Add(durationValue);
+                    if (durationValue == 7) // "Above 5 days" case
+                    {
+                        conditions.Add("duration > 5");
+                    }
+                    else
+                    {
+                        conditions.Add("duration = ?");
+                        parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = durationValue });
+                    }
                 }
                 catch (FormatException)
                 {
                     // Ignore invalid duration values
                 }
             }
-            
+
             // Filter by departure date
             if (!string.IsNullOrEmpty(departureDate) && !departureDate.Trim().Equals(""))
             {
@@ -415,33 +406,65 @@ namespace TourBookingSystem.DAOs
                 {
                     DateTime dateValue = DateTime.Parse(departureDate.Trim());
                     conditions.Add("departure_date >= ?");
-                    parameters.Add(dateValue);
+                    parameters.Add(new OleDbParameter("?", OleDbType.Date) { Value = dateValue.Date });
                 }
                 catch (FormatException)
                 {
                     // Ignore invalid date format
                 }
             }
-            
+
             // Build SQL query
             string sql = "SELECT * FROM " + TABLE_NAME;
             if (conditions.Count > 0)
             {
                 sql += " WHERE " + string.Join(" AND ", conditions);
+                sql += " AND status = 'ACTIVE'";
             }
-            sql += " AND status = 'ACTIVE' ORDER BY id DESC";
-            
+            else
+            {
+                sql += " WHERE status = 'ACTIVE'";
+            }
+
+            // Handle Sorting
+            string orderBy = "id DESC"; // Default
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy)
+                {
+                    case "price_asc":
+                        orderBy = "price ASC";
+                        break;
+                    case "price_desc":
+                        orderBy = "price DESC";
+                        break;
+                    case "date_asc":
+                        orderBy = "departure_date ASC";
+                        break;
+                    case "date_desc":
+                        orderBy = "departure_date DESC";
+                        break;
+                    case "duration_asc":
+                        orderBy = "duration ASC";
+                        break;
+                    case "duration_desc":
+                        orderBy = "duration DESC";
+                        break;
+                }
+            }
+            sql += " ORDER BY " + orderBy;
+
             List<Tour> tours = new List<Tour>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    for (int i = 0; i < parameters.Count; i++)
+                    foreach (var param in parameters)
                     {
-                        stmt.Parameters.AddWithValue("?", parameters[i]);
+                        stmt.Parameters.Add(param);
                     }
-                    
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -451,10 +474,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return tours;
         }
-        
+
         /**
          * Get all unique destinations
          * @return list of unique destination names
@@ -463,7 +486,7 @@ namespace TourBookingSystem.DAOs
         {
             string sql = "SELECT DISTINCT destination FROM " + TABLE_NAME + " WHERE status = 'ACTIVE' ORDER BY destination";
             List<string> destinations = new List<string>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
@@ -479,10 +502,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return destinations;
         }
-        
+
         /**
          * Get random tours for featured section
          * @param limit maximum number of tours to return
@@ -493,7 +516,7 @@ namespace TourBookingSystem.DAOs
             // Note: Access doesn't support ORDER BY RAND() like MySQL
             // We'll get all active tours and shuffle in memory
             List<Tour> allTours = getActiveTours();
-            
+
             // Shuffle
             var random = new Random();
             int n = allTours.Count;
@@ -504,11 +527,11 @@ namespace TourBookingSystem.DAOs
                 allTours[i] = allTours[j];
                 allTours[j] = temp;
             }
-            
+
             // Return limited results
             return allTours.Take(limit).ToList();
         }
-        
+
         /**
          * Get related tours by destination (excluding current tour)
          * @param destination the destination to match
@@ -522,19 +545,19 @@ namespace TourBookingSystem.DAOs
             {
                 return new List<Tour>();
             }
-            
-            string sql = "SELECT TOP " + limit + " * FROM " + TABLE_NAME + 
+
+            string sql = "SELECT TOP " + limit + " * FROM " + TABLE_NAME +
                          " WHERE destination LIKE ? AND id <> ? AND status = 'ACTIVE' " +
                          "ORDER BY id DESC";
             List<Tour> tours = new List<Tour>();
-            
+
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.AddWithValue("?", "%" + destination.Trim() + "%");
-                    stmt.Parameters.AddWithValue("?", currentTourId);
-                    
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = "%" + destination.Trim() + "%" });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = currentTourId });
+
                     using (OleDbDataReader rs = stmt.ExecuteReader())
                     {
                         while (rs.Read())
@@ -544,10 +567,10 @@ namespace TourBookingSystem.DAOs
                     }
                 }
             }
-            
+
             return tours;
         }
-        
+
         /**
          * Map ResultSet to Tour object
          */
@@ -558,28 +581,28 @@ namespace TourBookingSystem.DAOs
             tour.setName(rs["name"].ToString());
             tour.setDescription(rs["description"].ToString());
             tour.setDestination(rs["destination"].ToString());
-            
+
             if (rs["departure_date"] != DBNull.Value)
             {
                 tour.setDepartureDate(Convert.ToDateTime(rs["departure_date"]));
             }
-            
+
             tour.setDuration(Convert.ToInt32(rs["duration"]));
-            
+
             // Handle potential null for price
             if (rs["price"] != DBNull.Value)
             {
                 tour.setPrice(Convert.ToDecimal(rs["price"]));
             }
-            
+
             tour.setMaxParticipants(Convert.ToInt32(rs["max_participants"]));
             tour.setCurrentParticipants(Convert.ToInt32(rs["current_participants"]));
             tour.setImageUrl(rs["image_url"] != DBNull.Value ? rs["image_url"].ToString() : null);
             tour.setStatus(rs["status"].ToString());
-            
+
             return tour;
         }
-        
+
         /**
          * Sanitize string for database queries
          */
