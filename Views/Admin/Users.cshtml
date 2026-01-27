@@ -21,8 +21,8 @@
             <div class="filter-group">
                 <select name="role" class="premium-select">
                     <option value="">Tất cả vai trò</option>
-                    <option value="ADMIN" @(roleFilter == "ADMIN" ? "selected" : "")>Admin</option>
-                    <option value="USER" @(roleFilter == "USER" ? "selected" : "")>User</option>
+                    <option value="ADMIN" selected="@(roleFilter == "ADMIN" ? "selected" : null)">Admin</option>
+                    <option value="USER" selected="@(roleFilter == "USER" ? "selected" : null)">User</option>
                 </select>
             </div>
             <button type="submit" class="btn btn-primary-premium">
@@ -64,8 +64,8 @@
                                 <select class="role-select badge-select @(user.getRole().ToLower())" 
                                         onchange="updateRole(@user.getUserId(), this.value)" 
                                         @(user.getUserId() == currentUserId ? "disabled" : "")>
-                                    <option value="USER" @(user.getRole() == "USER" ? "selected" : "")>USER</option>
-                                    <option value="ADMIN" @(user.getRole() == "ADMIN" ? "selected" : "")>ADMIN</option>
+                                    <option value="USER" selected="@(user.getRole() == "USER" ? "selected" : null)">USER</option> 
+                                    <option value="ADMIN" selected="@(user.getRole() == "ADMIN" ? "selected" : null)">ADMIN</option>
                                 </select>
                             </td>
                             <td class="text-center">@user.getCreatedAt()</td>

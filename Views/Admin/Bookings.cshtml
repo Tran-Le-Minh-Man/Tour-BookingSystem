@@ -20,10 +20,10 @@
             <div class="filter-group">
                 <select name="status" class="premium-select">
                     <option value="">Tất cả trạng thái</option>
-                    <option value="PENDING" @(statusFilter == "PENDING" ? "selected" : "")>Chờ xác nhận</option>
-                    <option value="CONFIRMED" @(statusFilter == "CONFIRMED" ? "selected" : "")>Đã xác nhận</option>
-                    <option value="CANCELLED" @(statusFilter == "CANCELLED" ? "selected" : "")>Đã hủy</option>
-                    <option value="COMPLETED" @(statusFilter == "COMPLETED" ? "selected" : "")>Hoàn thành</option>
+                    <option value="PENDING" selected="@(statusFilter == "PENDING" ? "selected" : null)">Chờ xác nhận</option>
+                    <option value="CONFIRMED" selected="@(statusFilter == "CONFIRMED" ? "selected" : null)" >Đã xác nhận</option>
+                    <option value="CANCELLED" selected="@(statusFilter == "CANCELLED" ? "selected" : null)">Đã hủy</option>
+                    <option value="COMPLETED" selected="@(statusFilter == "COMPLETED" ? "selected" : null)">Hoàn thành</option>
                 </select>
             </div>
             <button type="submit" class="btn btn-primary-premium">

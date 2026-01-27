@@ -485,6 +485,7 @@ namespace TourBookingSystem.Controllers
             HttpContext.Session.SetInt32("userId", user.getUserId());
             HttpContext.Session.SetString("email", user.getEmail());
             HttpContext.Session.SetString("fullName", user.getFullName());
+            HttpContext.Session.SetString("phone", user.getPhone());
             HttpContext.Session.SetString("role", user.getRole());
             // Note: Session timeout is configured in Program.cs (default: 30 minutes)
             // HttpContext.Session.Timeout cannot be set at runtime in ASP.NET Core

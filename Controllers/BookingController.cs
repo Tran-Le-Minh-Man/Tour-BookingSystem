@@ -17,11 +17,13 @@ namespace TourBookingSystem.Controllers
     {
         private BookingDAO bookingDAO;
         private TourDAO tourDAO;
-        
+        private OrderDAO orderDAO;
+
         public BookingController()
         {
             bookingDAO = new BookingDAO();
             tourDAO = new TourDAO();
+            orderDAO = new OrderDAO();
         }
         
         /**
@@ -53,8 +55,7 @@ namespace TourBookingSystem.Controllers
                     showUserBookings(user);
                     break;
                 case "cancel":
-                    cancelBooking(user);
-                    break;
+                    return cancelBooking(user);
                 default:
                     showUserBookings(user);
                     break;
@@ -153,6 +154,8 @@ namespace TourBookingSystem.Controllers
             
             foreach (Booking booking in bookings)
             {
+                bool paid = orderDAO.hasPaidOrder(booking.getBookingId());
+                booking.setIsPaid(paid);
                 if ("PENDING".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
                 {
                     pendingBookings.Add(booking);
@@ -221,71 +224,119 @@ namespace TourBookingSystem.Controllers
                 return Json(new { status = "error", message = "Không thể tạo đơn đặt tour" });
             }
         }
-        
+
         /**
          * Cancel a booking
          */
-        private void cancelBooking(User user)
+        //private void cancelBooking(User user)
+        //{
+        //    string bookingIdStr = Request.Query["bookingId"];
+
+        //    if (string.IsNullOrEmpty(bookingIdStr) || bookingIdStr.Trim().Equals(""))
+        //    {
+        //        ViewData["error"] = "Booking ID không hợp lệ";
+        //        showUserBookings(user);
+        //        return;
+        //    }
+
+        //    int bookingId;
+        //    try
+        //    {
+        //        bookingId = int.Parse(bookingIdStr.Trim());
+        //    }
+        //    catch
+        //    {
+        //        ViewData["error"] = "Booking ID không hợp lệ";
+        //        showUserBookings(user);
+        //        return;
+        //    }
+
+        //    // Verify booking belongs to user
+        //    Booking booking = bookingDAO.findById(bookingId);
+
+        //    if (booking == null)
+        //    {
+        //        ViewData["error"] = "Đơn đặt tour không tồn tại";
+        //        showUserBookings(user);
+        //        return;
+        //    }
+
+        //    if (booking.getUserId() != user.getUserId())
+        //    {
+        //        ViewData["error"] = "Bạn không có quyền hủy đơn này";
+        //        showUserBookings(user);
+        //        return;
+        //    }
+
+        //    // Only allow cancel PENDING bookings
+        //    if (!"PENDING".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        ViewData["error"] = "Chỉ có thể hủy đơn đang chờ xác nhận";
+        //        showUserBookings(user);
+        //        return;
+        //    }
+
+        //    // Cancel the booking
+        //    bool success = bookingDAO.cancelBooking(bookingId);
+
+        //    if (success)
+        //    {
+        //        ViewData["success"] = "Hủy đặt tour thành công!";
+        //    }
+        //    else
+        //    {
+        //        ViewData["error"] = "Không thể hủy đặt tour. Vui lòng thử lại.";
+        //    }
+
+        //    showUserBookings(user);
+        //}
+        private IActionResult cancelBooking(User user)
         {
             string bookingIdStr = Request.Query["bookingId"];
-            
-            if (string.IsNullOrEmpty(bookingIdStr) || bookingIdStr.Trim().Equals(""))
+
+            if (string.IsNullOrEmpty(bookingIdStr))
             {
-                ViewData["error"] = "Booking ID không hợp lệ";
-                showUserBookings(user);
-                return;
+                TempData["error"] = "Booking ID không hợp lệ";
+                return RedirectToAction("Index");
             }
-            
+
             int bookingId;
-            try
+
+            if (!int.TryParse(bookingIdStr, out bookingId))
             {
-                bookingId = int.Parse(bookingIdStr.Trim());
+                TempData["error"] = "Booking ID không hợp lệ";
+                return RedirectToAction("Index");
             }
-            catch
-            {
-                ViewData["error"] = "Booking ID không hợp lệ";
-                showUserBookings(user);
-                return;
-            }
-            
-            // Verify booking belongs to user
+
             Booking booking = bookingDAO.findById(bookingId);
-            
+
             if (booking == null)
             {
-                ViewData["error"] = "Đơn đặt tour không tồn tại";
-                showUserBookings(user);
-                return;
+                TempData["error"] = "Đơn không tồn tại";
+                return RedirectToAction("Index");
             }
-            
+
             if (booking.getUserId() != user.getUserId())
             {
-                ViewData["error"] = "Bạn không có quyền hủy đơn này";
-                showUserBookings(user);
-                return;
+                TempData["error"] = "Không có quyền";
+                return RedirectToAction("Index");
             }
-            
-            // Only allow cancel PENDING bookings
+
             if (!"PENDING".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
             {
-                ViewData["error"] = "Chỉ có thể hủy đơn đang chờ xác nhận";
-                showUserBookings(user);
-                return;
+                TempData["error"] = "Không thể hủy";
+                return RedirectToAction("Index");
             }
-            
-            // Cancel the booking
+
             bool success = bookingDAO.cancelBooking(bookingId);
-            
+
             if (success)
-            {
-                ViewData["success"] = "Hủy đặt tour thành công!";
-            }
+                TempData["success"] = "Thanh toán thành công!";
+                
             else
-            {
-                ViewData["error"] = "Không thể hủy đặt tour. Vui lòng thử lại.";
-            }
-            
-            showUserBookings(user);
+                TempData["error"] = "Hủy thất bại";
+
+            return RedirectToAction("Index");
         }
     }
 }

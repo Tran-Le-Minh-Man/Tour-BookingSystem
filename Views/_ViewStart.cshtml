@@ -1,0 +1,7 @@
+﻿@using Microsoft.AspNetCore.Http
+
+@{
+    ViewData["userId"] = Context.Session.GetInt32("userId");
+    ViewData["fullName"] = Context.Session.GetString("fullName");
+    ViewData["role"] = Context.Session.GetString("role");
+}

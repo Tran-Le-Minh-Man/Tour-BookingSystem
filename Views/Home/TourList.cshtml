@@ -37,7 +37,8 @@
                         <option value="">Tất cả địa điểm</option>
                         @if (destinations != null) {
                             foreach (var dest in destinations) {
-                                <option value="@dest" @(selectedDest == dest ? "selected" : "")>@dest</option>
+                                <option value="@dest" selected="@(selectedDest == dest ? "selected" : null)">@dest</option>
+                                
                             }
                         }
                     </select>
@@ -58,12 +59,12 @@
                     <label>Thời gian</label>
                     <select name="duration">
                         <option value="">Tất cả thời gian</option>
-                        <option value="1" @(duration?.ToString() == "1" ? "selected" : "")>1 ngày</option>
-                        <option value="2" @(duration?.ToString() == "2" ? "selected" : "")>2 ngày</option>
-                        <option value="3" @(duration?.ToString() == "3" ? "selected" : "")>3 ngày</option>
-                        <option value="4" @(duration?.ToString() == "4" ? "selected" : "")>4 ngày</option>
-                        <option value="5" @(duration?.ToString() == "5" ? "selected" : "")>5 ngày</option>
-                        <option value="7" @(duration?.ToString() == "7" ? "selected" : "")>Trên 5 ngày</option>
+                        <option value="1" selected="@(duration?.ToString() == "1" ? "selected" : null)">1 ngày</option> 
+                        <option value="2" selected="@(duration?.ToString() == "2" ? "selected" : null)">2 ngày</option>
+                        <option value="3" selected="@(duration?.ToString() == "3" ? "selected" : null)">3 ngày</option>
+                        <option value="4" selected="@(duration?.ToString() == "4" ? "selected" : null)">4 ngày</option>
+                        <option value="5" selected="@(duration?.ToString() == "5" ? "selected" : null)">5 ngày</option>
+                        <option value="7" selected="@(duration?.ToString() == "7" ? "selected" : null)">Trên 5 ngày</option>
                     </select>
                 </div>
 
@@ -75,10 +76,10 @@
                 <div class="field-item">
                     <label>Sắp xếp theo</label>
                     <select name="sortBy">
-                        <option value="id_desc" @(sortBy == "id_desc" ? "selected" : "")>Mới nhất</option>
-                        <option value="price_asc" @(sortBy == "price_asc" ? "selected" : "")>Giá tăng dần</option>
-                        <option value="price_desc" @(sortBy == "price_desc" ? "selected" : "")>Giá giảm dần</option>
-                        <option value="date_asc" @(sortBy == "date_asc" ? "selected" : "")>Ngày đi (Sắp tới)</option>
+                        <option value="id_desc" selected="@(sortBy == "id_desc" ? "selected" : null)">Mới nhất</option> 
+                        <option value="price_asc" selected="@(sortBy == "price_asc" ? "selected" : null)">Giá tăng dần</option>
+                        <option value="price_desc" selected="@(sortBy == "price_desc" ? "selected" : null)">Giá giảm dần</option>
+                        <option value="date_asc" selected="@(sortBy == "date_asc" ? "selected" : null)">Ngày đi (Sắp tới)</option>
                     </select>
                 </div>
 

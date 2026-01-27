@@ -23,8 +23,8 @@
             <div class="filter-group">
                 <select name="status" class="premium-select">
                     <option value="">Tất cả trạng thái</option>
-                    <option value="ACTIVE" @(statusFilter == "ACTIVE" ? "selected" : "")>Hoạt động</option>
-                    <option value="INACTIVE" @(statusFilter == "INACTIVE" ? "selected" : "")>Vô hiệu hóa</option>
+                    <option value="ACTIVE" selected="@(statusFilter == "ACTIVE" ? "selected" : null)">Hoạt động</option>
+                    <option value="INACTIVE" selected="@(statusFilter == "INACTIVE" ? "selected" : null)">Vô hiệu hóa</option>
                 </select>
             </div>
             <button type="submit" class="btn btn-primary-premium">

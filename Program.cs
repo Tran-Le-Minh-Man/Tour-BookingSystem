@@ -28,8 +28,9 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStaticFiles();
 
-app.UseSession();
 app.UseRouting();
+
+app.UseSession();   
 
 app.UseAuthorization();
 

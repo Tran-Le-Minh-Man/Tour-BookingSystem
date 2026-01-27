@@ -28,6 +28,7 @@ namespace TourBookingSystem.Models
         private string tourDeparture;
         private int tourDuration;
         private decimal tourPrice;
+        private bool isPaid;
         
         public Booking() {}
         
@@ -99,6 +100,12 @@ namespace TourBookingSystem.Models
         
         public decimal getTourPrice() { return tourPrice; }
         public void setTourPrice(decimal tourPrice) { this.tourPrice = tourPrice; }
+
+        public bool getIsPaid() { return isPaid; }
+        public void setIsPaid(bool value)
+        {
+            isPaid = value;
+        }
         
         // Helper methods
         public bool isPending()

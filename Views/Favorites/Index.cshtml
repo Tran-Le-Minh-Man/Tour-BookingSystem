@@ -15,12 +15,19 @@
         <div class="tour-grid">
             @foreach (var fav in favorites)
             {
+                var img = fav["tour_image"]?.ToString() ?? "";
+                if (!img.StartsWith("http"))
+                {
+                  img = "/" + img.TrimStart('/').ToLower();
+                }
+                
                 <div class="tour-card" id="fav-@fav["tour_id"]">
                     <div class="tour-image">
-                        <img src="@(fav["tour_image"]?.ToString().StartsWith("http") == true || fav["tour_image"]?.ToString().Contains("images/") == true ? (fav["tour_image"].ToString().StartsWith("/") ? "" : "/") + fav["tour_image"] : "/images/nhatrang.jpg")" alt="@fav["tour_name"]" onerror="this.src='/images/nhatrang.jpg'">
+                        <img src="@img" onerror="this.src='/images/nhatrang.jpg'">
                         <button class="btn-fav active" onclick="toggleFavorite(@fav["tour_id"])">
                             <i class="fas fa-heart"></i>
                         </button>
+                        
                     </div>
                     <div class="tour-content">
                         <div class="tour-destination">

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using System.Diagnostics;
 using TourBookingSystem.Models;
 using TourBookingSystem.Utils;
 
@@ -346,19 +347,49 @@ namespace TourBookingSystem.DAOs
         /**
          * Update booking status
          */
+        //public bool updateStatus(int id, string status)
+        //{
+        //    string sql = "UPDATE " + TABLE_NAME + " SET status = ? WHERE id = ?";
+
+        //    using (OleDbConnection conn = DBConnection.getConnection())
+        //    {
+        //        using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+        //        {
+        //            stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status.ToUpper() });
+        //            stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
+
+        //            int rowsAffected = stmt.ExecuteNonQuery();
+        //            Console.WriteLine("Rows affected: " + rowsAffected);
+        //            Console.WriteLine(">>> Using DB = " + conn.DataSource);
+        //            return rowsAffected > 0;
+        //        }
+        //    }
+        //}
         public bool updateStatus(int id, string status)
         {
-            string sql = "UPDATE " + TABLE_NAME + " SET status = ? WHERE id = ?";
+            string sql = "UPDATE " + TABLE_NAME + " SET [status] = ? WHERE [id] = ?";
 
             using (OleDbConnection conn = DBConnection.getConnection())
             {
-                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                try
                 {
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status.ToUpper() });
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
+                    using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                    {
+                        Debug.WriteLine("[updateStatus] Running SQL: " + sql);
 
-                    int rowsAffected = stmt.ExecuteNonQuery();
-                    return rowsAffected > 0;
+                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status.ToUpper() });
+                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
+
+                        int rows = stmt.ExecuteNonQuery();
+                        Debug.WriteLine("[updateStatus] Rows affected: " + rows);
+
+                        return rows > 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("[updateStatus ERROR] " + ex.Message);
+                    return false;
                 }
             }
         }

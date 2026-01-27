@@ -3,7 +3,7 @@
     ViewData["Title"] = "Đơn hàng của tôi";
     var pendingBookings = ViewData["pendingBookings"] as List<TourBookingSystem.Models.Booking>;
     var confirmedBookings = ViewData["confirmedBookings"] as List<TourBookingSystem.Models.Booking>;
-    var allBookings = ViewData["bookings"] as List<TourBookingSystem.Models.Booking>;
+    var allBookings = (ViewData["bookings"] as List<TourBookingSystem.Models.Booking>);
 }
 
 <div class="booking-hero">
@@ -54,6 +54,16 @@
                             @if ("PENDING".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
                             {
                                 <button class="btn-cancel-user" onclick="confirmCancel(@booking.getBookingId())">Hủy đơn</button>
+                            }
+                            else if (booking.getIsPaid())
+                            {
+                                <span class="badge bg-success">Đã thanh toán</span>
+                            }
+                            else if ("CONFIRMED".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
+                            {
+                                <a href="@Url.Action("Index","Checkout",
+                                           new { bookingId = booking.getBookingId() })"
+                                            class="btn-pay">Thanh toán</a>
                             }
                         </div>
                     </div>
@@ -171,6 +181,24 @@
     }
     .btn-cancel-user:hover { text-decoration: underline; }
 
+    .btn-pay {
+        display: block;
+        text-align: center;
+        padding: 8px;
+        border-radius: 10px;
+        background: #22c55e;
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+        .btn-pay:hover {
+            background: #16a34a;
+        }
+
+
     .empty-booking { text-align: center; padding: 80px 0; color: #94a3b8; }
     .empty-booking i { font-size: 4rem; opacity: 0.2; margin-bottom: 20px; }
     .empty-booking .btn-indigo { display: inline-block; margin-top: 25px; text-decoration: none; }
@@ -190,7 +218,11 @@
         const btns = document.querySelectorAll('.tab-btn');
         
         btns.forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.textContent.toLowerCase().includes(status) || status === 'all') {
+            btn.classList.add('active');
+        }
+        });
 
         cards.forEach(card => {
             if (status === 'all' || card.getAttribute('data-status') === status) {

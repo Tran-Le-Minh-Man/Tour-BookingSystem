@@ -1,0 +1,420 @@
+﻿@model TourBookingSystem.Models.CheckoutViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Thanh toán";
+    
+}
+<div class="checkout-container">
+
+    <h2 class="title">Thanh toán tour</h2>
+
+    <form asp-action="Index" method="post" class="checkout-form">
+
+        <div class="checkout-grid">
+
+            <!-- ================= LEFT ================= -->
+            <div class="left-box">
+
+                <div class="card">
+
+                    <h3>Thông tin đơn hàng</h3>
+
+                    <div class="tour-info">
+
+                        <img src="@Model.ImageUrl" class="tour-img" />
+
+                        <div>
+                            <h4>@Model.TourName</h4>
+                            <p>@Model.Destination</p>
+                        </div>
+
+                    </div>
+                    <div class="quantity-box">
+
+                        <label>Số người:</label>
+
+                        <div class="qty-control">
+
+                            <button type="button" onclick="decrease()">-</button>
+
+                            <input type="number"
+                                   id="qty"
+                                   name="Quantity"
+                                   value="@Model.Quantity"
+                                   min="1"
+                                   readonly />
+
+                            <button type="button" onclick="increase()">+</button>
+
+                        </div>
+
+                    </div>
+                    <hr>
+                    <input type="hidden" name="BookingId" value="@Model.BookingId" />
+                    <div class="price-row">
+                        <span>Giá tour:</span>
+                        <strong>@Model.Price.ToString("N0") đ</strong>
+                    </div>
+
+                    <div class="price-row total">
+                        <span>Tổng tiền:</span>
+                        <strong id="totalPrice" >@Model.Total.ToString("N0") đ</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= RIGHT ================= -->
+            <div class="right-box">
+
+                <div class="card">
+
+                    <h3>Thông tin khách hàng</h3>
+
+                    <input type="hidden" asp-for="TourId" />
+
+                    <!-- Fullname -->
+                    <div class="form-group">
+                        <label>Họ tên</label>
+                        <input asp-for="FullName" />
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input asp-for="Email" />
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="form-group">
+                        <label>Số điện thoại</label>
+                        <input asp-for="Phone" />
+                    </div>
+
+                    <!-- Note -->
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <textarea asp-for="Note"></textarea>
+                    </div>
+
+
+                    <!-- PAYMENT -->
+                    <h3>Thanh toán</h3>
+
+                    <div class="payment-box">
+
+                        <div class="pay-tab active" data-tab="cod">
+                            Trả khi đi tour
+                        </div>
+
+                        <div class="pay-content show" id="cod">
+                            <p>Thanh toán trực tiếp khi tham gia tour</p>
+                        </div>
+
+
+                        <div class="pay-tab" data-tab="wallet">
+                            Ví điện tử
+                        </div>
+
+                        <div class="pay-content" id="wallet">
+
+                            <label>
+                                <input type="radio" name="wallet" value="momo" />
+                                MoMo
+                            </label>
+
+                            <label>
+                                <input type="radio" name="wallet" value="zalopay" />
+                                ZaloPay
+                            </label>
+
+                        </div>
+
+
+                        <div class="pay-tab" data-tab="bank">
+                            Ngân hàng
+                        </div>
+
+                        <div class="pay-content" id="bank">
+
+                            <label>
+                                <input type="radio" name="bank" value="vcb" />
+                                Vietcombank
+                            </label>
+
+                            <label>
+                                <input type="radio" name="bank" value="bidv" />
+                                BIDV
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <input type="hidden" asp-for="PaymentMethod" id="payment_method" />
+                    <input type="hidden" asp-for="PaymentProvider" id="payment_provider" />
+
+
+                    <div class="btn-group">
+
+                        <button type="submit" class="btn-submit">
+                            Xác nhận
+                        </button>
+
+                        <a href="/Booking" class="btn-cancel">
+                            Huỷ
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+@if (TempData["success"] != null)
+{
+    <script>
+        alert("@TempData["success"]");
+    </script>
+}
+
+<!-- ================= JS ================= -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        /* ================= PAYMENT TAB ================= */
+
+        const tabs = document.querySelectorAll('.pay-tab');
+        const contents = document.querySelectorAll('.pay-content');
+
+        const method = document.getElementById('payment_method');
+        const provider = document.getElementById('payment_provider');
+
+        tabs.forEach(tab => {
+
+            tab.addEventListener('click', () => {
+
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.remove('show'));
+
+                tab.classList.add('active');
+
+                const id = tab.dataset.tab;
+
+                document.getElementById(id).classList.add('show');
+
+                method.value = id;
+                provider.value = "";
+            });
+
+        });
+
+        document.querySelectorAll('[name="wallet"]').forEach(r => {
+            r.addEventListener('change', () => {
+                provider.value = r.value;
+            });
+        });
+
+        document.querySelectorAll('[name="bank"]').forEach(r => {
+            r.addEventListener('change', () => {
+                provider.value = r.value;
+            });
+        });
+
+
+        const price = @Model.Price;
+
+        const qtyInput = document.getElementById("qty");
+        const totalBox = document.getElementById("totalPrice");
+
+
+        function updateTotal() {
+
+            let qty = parseInt(qtyInput.value) || 1;
+
+            if (qty < 1) qty = 1;
+
+            let total = price * qty;
+
+            totalBox.innerText =
+                total.toLocaleString('vi-VN') + " đ";
+        }
+
+        window.increase = function () {
+
+            let value = parseInt(qtyInput.value) || 1;
+
+            qtyInput.value = value + 1;
+
+            updateTotal();
+        }
+
+        window.decrease = function () {
+
+            let value = parseInt(qtyInput.value) || 1;
+
+            if (value > 1) {
+
+                qtyInput.value = value - 1;
+
+                updateTotal();
+            }
+        }
+
+        updateTotal();
+
+    });
+</script>
+
+
+<!-- ================= CSS ================= -->
+<style>
+
+    body {
+        font-family: Arial, sans-serif;
+        background: #f6f6f6;
+    }
+
+    .checkout-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .title {
+        margin-bottom: 25px;
+        color: #c0392b;
+    }
+
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.3fr;
+        gap: 25px;
+    }
+
+    .card {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.08);
+    }
+
+    .tour-info {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .tour-img {
+        width: 100px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+    }
+
+        .price-row.total {
+            font-size: 18px;
+            color: #e74c3c;
+        }
+
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-group textarea {
+            height: 70px;
+            resize: none;
+        }
+
+    .payment-box {
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        margin-top: 10px;
+    }
+
+    .pay-tab {
+        padding: 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        background: #fafafa;
+    }
+
+        .pay-tab.active {
+            background: #fff1ed;
+            border-left: 4px solid #e74c3c;
+        }
+
+    .pay-content {
+        display: none;
+        padding: 15px 20px;
+    }
+
+        .pay-content.show {
+            display: block;
+        }
+
+        .pay-content label {
+            display: block;
+            margin: 5px 0;
+        }
+
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 12px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+
+        .btn-submit:hover {
+            background: #c0392b;
+        }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        background: #aaa;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+        .btn-cancel:hover {
+            background: #888;
+        }
+
+</style>
