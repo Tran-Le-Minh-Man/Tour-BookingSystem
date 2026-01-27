@@ -72,14 +72,12 @@ namespace TourBookingSystem.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            HttpContext.Session.Remove("_csrf_token");
 
             // Check if user is already logged in
             if (HttpContext.Session.GetInt32("userId") != null)
             {
                 return RedirectToAction("Index", "Home");
             }
-
             // Check for remember me cookie and auto-login
             string rememberToken = HttpContext.Request.Cookies["auth_token"];
             if (!string.IsNullOrEmpty(rememberToken))
@@ -91,11 +89,6 @@ namespace TourBookingSystem.Controllers
                     return RedirectToAction("Index", "Home");
                 }
             }
-
-            // Generate CSRF token
-            string csrfToken = Guid.NewGuid().ToString();
-            HttpContext.Session.SetString("_csrf_token", csrfToken);
-            ViewData["_csrf_token"] = csrfToken;
 
             // Check for success message from registration
             if (TempData["success"] != null)
@@ -222,12 +215,6 @@ namespace TourBookingSystem.Controllers
             {
                 return RedirectToAction("Index", "Home");
             }
-
-            // Generate CSRF token
-            string csrfToken = Guid.NewGuid().ToString();
-            HttpContext.Session.SetString("_csrf_token", csrfToken);
-            ViewData["_csrf_token"] = csrfToken;
-
             return View();
         }
 
@@ -238,13 +225,6 @@ namespace TourBookingSystem.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Register(string fullName, string email, string phone, string password, string confirmPassword)
         {
-            // Validate CSRF token - HANDLED BY [ValidateAntiForgeryToken]
-            // string sessionCsrfToken = HttpContext.Session.GetString("_csrf_token");
-            // if (sessionCsrfToken == null || !sessionCsrfToken.Equals(Request.Form["_csrf_token"]))
-            // {
-            //    ViewData["error"] = "Yêu cầu không hợp lệ. Vui lòng thử lại.";
-            //    return View();
-            // }
             System.Text.StringBuilder errorMessages = new System.Text.StringBuilder();
             // Sanitize inputs (basic trim)
             fullName = fullName?.Trim();
@@ -492,8 +472,6 @@ namespace TourBookingSystem.Controllers
             // Note: Session timeout is configured in Program.cs (default: 30 minutes)
             // HttpContext.Session.Timeout cannot be set at runtime in ASP.NET Core
             // Generate new CSRF token after login
-            string newCsrfToken = Guid.NewGuid().ToString();
-            HttpContext.Session.SetString("_csrf_token", newCsrfToken);
         }
 
         /**

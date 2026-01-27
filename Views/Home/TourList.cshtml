@@ -156,33 +156,3 @@
             </main>
         </div>
     </div>
-</section>
-@section Scripts {
-    <script>
-        function bookTour(tourId) {
-            var quantity = prompt("Nhập số lượng người:");
-            if (quantity != null && quantity > 0) {
-                fetch('@Url.Action("Index", "Booking")', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'action=create&tourId=' + tourId + '&quantity=' + quantity
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert(data.message);
-                        window.location.href = '@Url.Action("Index", "Booking")';
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra!');
-                });
-            }
-        }
-    </script>
-}
