@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,121 +10,144 @@ namespace TourBookingSystem.Models
     /**
      * Tour model class
      */
+    [Table("tours")]
     public class Tour
     {
-        private int tourId;
-        private string name;
-        private string description;
-        private string destination;
-        private DateTime? departureDate;
-        private int duration; // Số ngày
-        private decimal price;
-        private int maxParticipants;
-        private int currentParticipants;
-        private string imageUrl;
-        private string status; // ACTIVE, INACTIVE
-        
-        public Tour() {}
-        
+        [Key]
+        [Column("id")]
+        public int TourId { get; set; }
+
+        [Column("name")]
+        public string? Name { get; set; }
+
+        [Column("description")]
+        public string? Description { get; set; }
+
+        [Column("destination")]
+        public string? Destination { get; set; }
+
+        [Column("departure_date")]
+        public DateTime? DepartureDate { get; set; }
+
+        [Column("duration")]
+        public int Duration { get; set; } // Số ngày
+
+        [Column("price")]
+        public decimal Price { get; set; }
+
+        [Column("max_participants")]
+        public int MaxParticipants { get; set; }
+
+        [Column("current_participants")]
+        public int CurrentParticipants { get; set; }
+
+        [Column("image_url")]
+        public string? ImageUrl { get; set; }
+
+        [Column("status")]
+        public string Status { get; set; } = "ACTIVE"; // ACTIVE, INACTIVE
+
+        public Tour() { }
+
         public Tour(int tourId, string name, string description, string destination,
                     DateTime? departureDate, int duration, decimal price,
                     int maxParticipants, int currentParticipants, string imageUrl, string status)
         {
-            this.tourId = tourId;
-            this.name = name;
-            this.description = description;
-            this.destination = destination;
-            this.departureDate = departureDate;
-            this.duration = duration;
-            this.price = price;
-            this.maxParticipants = maxParticipants;
-            this.currentParticipants = currentParticipants;
-            this.imageUrl = imageUrl;
-            this.status = status;
+            this.TourId = tourId;
+            this.Name = name;
+            this.Description = description;
+            this.Destination = destination;
+            this.DepartureDate = departureDate;
+            this.Duration = duration;
+            this.Price = price;
+            this.MaxParticipants = maxParticipants;
+            this.CurrentParticipants = currentParticipants;
+            this.ImageUrl = imageUrl;
+            this.Status = status;
         }
-        
-        // Getters and Setters
-        public int getTourId() { return tourId; }
-        public void setTourId(int tourId) { this.tourId = tourId; }
-        
-        public string getName() { return name; }
-        public void setName(string name) 
-        { 
-            this.name = (name != null) ? name.Trim() : null; 
+
+        // Legacy Getters and Setters for compatibility
+        public int getTourId() { return TourId; }
+        public void setTourId(int tourId) { this.TourId = tourId; }
+
+        public string? getName() { return Name; }
+        public void setName(string? name)
+        {
+            this.Name = (name != null) ? name.Trim() : null;
         }
-        
-        public string getDescription() { return description; }
-        public void setDescription(string description) 
-        { 
-            this.description = (description != null) ? description.Trim() : null; 
+
+        public string? getDescription() { return Description; }
+        public void setDescription(string? description)
+        {
+            this.Description = (description != null) ? description.Trim() : null;
         }
-        
-        public string getDestination() { return destination; }
-        public void setDestination(string destination) 
-        { 
-            this.destination = (destination != null) ? destination.Trim() : null; 
+
+        public string? getDestination() { return Destination; }
+        public void setDestination(string? destination)
+        {
+            this.Destination = (destination != null) ? destination.Trim() : null;
         }
-        
-        public DateTime? getDepartureDate() { return departureDate; }
-        public void setDepartureDate(DateTime? departureDate) { this.departureDate = departureDate; }
-        
-        public int getDuration() { return duration; }
-        public void setDuration(int duration) { this.duration = duration; }
-        
-        public decimal getPrice() { return price; }
-        public void setPrice(decimal price) { this.price = price; }
-        
-        public int getMaxParticipants() { return maxParticipants; }
-        public void setMaxParticipants(int maxParticipants) { this.maxParticipants = maxParticipants; }
-        
-        public int getCurrentParticipants() { return currentParticipants; }
-        public void setCurrentParticipants(int currentParticipants) { this.currentParticipants = currentParticipants; }
-        
-        public string getImageUrl() { return imageUrl; }
-        public void setImageUrl(string imageUrl) 
-        { 
-            this.imageUrl = (imageUrl != null) ? imageUrl.Trim() : null; 
+
+        public DateTime? getDepartureDate() { return DepartureDate; }
+        public void setDepartureDate(DateTime? departureDate) { this.DepartureDate = departureDate; }
+
+        public int getDuration() { return Duration; }
+        public void setDuration(int duration) { this.Duration = duration; }
+
+        public decimal getPrice() { return Price; }
+        public void setPrice(decimal price) { this.Price = price; }
+
+        public int getMaxParticipants() { return MaxParticipants; }
+        public void setMaxParticipants(int maxParticipants) { this.MaxParticipants = maxParticipants; }
+
+        public int getCurrentParticipants() { return CurrentParticipants; }
+        public void setCurrentParticipants(int currentParticipants) { this.CurrentParticipants = currentParticipants; }
+
+        public string? getImageUrl() { return ImageUrl; }
+        public void setImageUrl(string? imageUrl)
+        {
+            this.ImageUrl = (imageUrl != null) ? imageUrl.Trim() : null;
         }
-        
-        public string getStatus() { return status; }
-        public void setStatus(string status) 
-        { 
-            this.status = (status != null) ? status.Trim() : "ACTIVE"; 
+
+        public string getStatus() { return Status; }
+        public void setStatus(string? status)
+        {
+            this.Status = (status != null) ? status.Trim() : "ACTIVE";
         }
-        
+
         // Helper methods
         public bool isActive()
         {
-            return "ACTIVE".Equals(status, StringComparison.OrdinalIgnoreCase);
+            return "ACTIVE".Equals(Status, StringComparison.OrdinalIgnoreCase);
         }
-        
+
         public int getAvailableSlots()
         {
-            return Math.Max(0, maxParticipants - currentParticipants);
+            return Math.Max(0, MaxParticipants - CurrentParticipants);
         }
-        
+
         public string getFormattedPrice()
         {
-            if (price == 0) return "0đ";
-            return String.Format("{0:N0}đ", price);
+            if (Price == 0) return "0đ";
+            return String.Format("{0:N0}đ", Price);
         }
-        
+
         public string getSafeImageUrl()
         {
-            if (string.IsNullOrEmpty(imageUrl))
+            if (string.IsNullOrEmpty(ImageUrl))
             {
                 return "https://images.unsplash.com/photo-1502602898657-3e917247a183?q=80&w=2070&auto=format&fit=crop";
             }
-            
+
             // If it's a full URL or a relative path starting with / or ~/ or images/
-            if (imageUrl.StartsWith("http") || imageUrl.StartsWith("/") || imageUrl.StartsWith("~/") || imageUrl.ToLower().Contains("images/"))
+            if (ImageUrl.StartsWith("http") || ImageUrl.StartsWith("/") || ImageUrl.StartsWith("~/") || ImageUrl.ToLower().Contains("images/"))
             {
                 // If it's relative but doesn't start with /, prepend it (except if encoded/etc)
-                if (!imageUrl.StartsWith("http") && !imageUrl.StartsWith("/") && !imageUrl.StartsWith("~/"))
+                if (!ImageUrl.StartsWith("http") && !ImageUrl.StartsWith("/") && !ImageUrl.StartsWith("~/"))
                 {
-                    return "/" + imageUrl;
+                    return "/" + ImageUrl;
                 }
-                return imageUrl;
+                return ImageUrl;
             }
 
             return "https://images.unsplash.com/photo-1502602898657-3e917247a183?q=80&w=2070&auto=format&fit=crop";
@@ -130,31 +155,31 @@ namespace TourBookingSystem.Models
 
         public string getFormattedDepartureDate()
         {
-            if (departureDate == null) return "";
-            return departureDate.Value.ToString("dd/MM/yyyy");
+            if (DepartureDate == null) return "";
+            return DepartureDate.Value.ToString("dd/MM/yyyy");
         }
-        
+
         public override bool Equals(object? o)
         {
             if (this == o) return true;
             if (o == null || GetType() != o.GetType()) return false;
             Tour tour = (Tour)o;
-            return tourId == tour.tourId;
+            return TourId == tour.TourId;
         }
-        
+
         public override int GetHashCode()
         {
-            return HashCode.Combine(tourId);
+            return HashCode.Combine(TourId);
         }
-        
+
         public override string ToString()
         {
             return "Tour{" +
-                    "tourId=" + tourId +
-                    ", name='" + name + '\'' +
-                    ", destination='" + destination + '\'' +
-                    ", price=" + price +
-                    ", status='" + status + '\'' +
+                    "tourId=" + TourId +
+                    ", name='" + Name + '\'' +
+                    ", destination='" + Destination + '\'' +
+                    ", price=" + Price +
+                    ", status='" + Status + '\'' +
                     '}';
         }
     }

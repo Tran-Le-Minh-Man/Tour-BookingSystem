@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TourBookingSystem.Models;
 using TourBookingSystem.DAOs;
 using TourBookingSystem.Utils;
+using TourBookingSystem.Database;
 namespace TourBookingSystem.Controllers
 {
     /**
@@ -14,7 +15,8 @@ namespace TourBookingSystem.Controllers
      */
     public class AccountController : Controller
     {
-        private UserDAO userDAO;
+        private readonly UserDAO userDAO;
+        private readonly ApplicationDbContext _context;
 
         private static readonly int MAX_LOGIN_ATTEMPTS = 5;
         private static readonly int LOCKOUT_TIME = 15 * 60; // 15 minutes in seconds
@@ -58,9 +60,10 @@ namespace TourBookingSystem.Controllers
             }
         }
 
-        public AccountController()
+        public AccountController(ApplicationDbContext context)
         {
-            userDAO = new UserDAO();
+            _context = context;
+            userDAO = new UserDAO(_context);
         }
 
         /**

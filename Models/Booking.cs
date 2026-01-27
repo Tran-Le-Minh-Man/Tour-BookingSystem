@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,154 +10,179 @@ namespace TourBookingSystem.Models
     /**
      * Booking model class
      */
+    [Table("bookings")]
     public class Booking
     {
-        private int bookingId;
-        private int userId;
-        private int tourId;
-        private DateTime? bookingDate;
-        private string status; // PENDING, CONFIRMED, CANCELLED, COMPLETED
-        private int numParticipants;
-        private decimal totalPrice;
-        private string notes;
-        
-        // Additional fields for display
-        private string userName;
-        private string userEmail;
-        private string tourName;
-        private string tourDestination;
-        private string tourImage;
-        private string tourDeparture;
-        private int tourDuration;
-        private decimal tourPrice;
-        
-        public Booking() {}
-        
+        [Key]
+        [Column("id")]
+        public int BookingId { get; set; }
+
+        [Column("user_id")]
+        public int UserId { get; set; }
+
+        [Column("tour_id")]
+        public int TourId { get; set; }
+
+        [Column("booking_date")]
+        public DateTime? BookingDate { get; set; }
+
+        [Column("status")]
+        public string Status { get; set; } = "PENDING"; // PENDING, CONFIRMED, CANCELLED, COMPLETED
+
+        [Column("num_participants")]
+        public int NumParticipants { get; set; }
+
+        [Column("total_price")]
+        public decimal TotalPrice { get; set; }
+
+        [Column("notes")]
+        public string? Notes { get; set; }
+
+        // Additional fields for display (marked as NotMapped for EF Core)
+        [NotMapped]
+        public string? UserName { get; set; }
+        [NotMapped]
+        public string? UserEmail { get; set; }
+        [NotMapped]
+        public string? TourName { get; set; }
+        [NotMapped]
+        public string? TourDestination { get; set; }
+        [NotMapped]
+        public string? TourImage { get; set; }
+        [NotMapped]
+        public string? TourDeparture { get; set; }
+        [NotMapped]
+        public int TourDuration { get; set; }
+        [NotMapped]
+        public decimal TourPrice { get; set; }
+
+        public Booking() { }
+
         public Booking(int bookingId, int userId, int tourId, DateTime? bookingDate,
                        string status, int numParticipants, decimal totalPrice, string notes)
         {
-            this.bookingId = bookingId;
-            this.userId = userId;
-            this.tourId = tourId;
-            this.bookingDate = bookingDate;
-            this.status = status;
-            this.numParticipants = numParticipants;
-            this.totalPrice = totalPrice;
-            this.notes = notes;
+            this.BookingId = bookingId;
+            this.UserId = userId;
+            this.TourId = tourId;
+            this.BookingDate = bookingDate;
+            this.Status = status;
+            this.NumParticipants = numParticipants;
+            this.TotalPrice = totalPrice;
+            this.Notes = notes;
         }
-        
-        // Getters and Setters
-        public int getBookingId() { return bookingId; }
-        public void setBookingId(int bookingId) { this.bookingId = bookingId; }
-        
-        public int getUserId() { return userId; }
-        public void setUserId(int userId) { this.userId = userId; }
-        
-        public int getTourId() { return tourId; }
-        public void setTourId(int tourId) { this.tourId = tourId; }
-        
-        public DateTime? getBookingDate() { return bookingDate; }
-        public void setBookingDate(DateTime? bookingDate) { this.bookingDate = bookingDate; }
-        
-        public string getStatus() { return status; }
-        public void setStatus(string status) 
-        { 
-            this.status = (status != null) ? status.Trim().ToUpper() : "PENDING"; 
+
+        // Legacy Getters and Setters
+        public int getBookingId() { return BookingId; }
+        public void setBookingId(int bookingId) { this.BookingId = bookingId; }
+
+        public int getUserId() { return UserId; }
+        public void setUserId(int userId) { this.UserId = userId; }
+
+        public int getTourId() { return TourId; }
+        public void setTourId(int tourId) { this.TourId = tourId; }
+
+        public DateTime? getBookingDate() { return BookingDate; }
+        public void setBookingDate(DateTime? bookingDate) { this.BookingDate = bookingDate; }
+
+        public string getStatus() { return Status; }
+        public void setStatus(string? status)
+        {
+            this.Status = (status != null) ? status.Trim().ToUpper() : "PENDING";
         }
-        
-        public int getNumParticipants() { return numParticipants; }
-        public void setNumParticipants(int numParticipants) { this.numParticipants = numParticipants; }
-        
-        public decimal getTotalPrice() { return totalPrice; }
-        public void setTotalPrice(decimal totalPrice) { this.totalPrice = totalPrice; }
-        
-        public string getNotes() { return notes; }
-        public void setNotes(string notes) 
-        { 
-            this.notes = (notes != null) ? notes.Trim() : null; 
+
+        public int getNumParticipants() { return NumParticipants; }
+        public void setNumParticipants(int numParticipants) { this.NumParticipants = numParticipants; }
+
+        public decimal getTotalPrice() { return TotalPrice; }
+        public void setTotalPrice(decimal totalPrice) { this.TotalPrice = totalPrice; }
+
+        public string? getNotes() { return Notes; }
+        public void setNotes(string? notes)
+        {
+            this.Notes = (notes != null) ? notes.Trim() : null;
         }
-        
+
         // Display fields
-        public string getUserName() { return userName; }
-        public void setUserName(string userName) { this.userName = userName; }
-        
-        public string getUserEmail() { return userEmail; }
-        public void setUserEmail(string userEmail) { this.userEmail = userEmail; }
-        
-        public string getTourName() { return tourName; }
-        public void setTourName(string tourName) { this.tourName = tourName; }
-        
-        public string getTourDestination() { return tourDestination; }
-        public void setTourDestination(string tourDestination) { this.tourDestination = tourDestination; }
-        
-        public string getTourImage() { return tourImage; }
-        public void setTourImage(string tourImage) { this.tourImage = tourImage; }
-        
-        public string getTourDeparture() { return tourDeparture; }
-        public void setTourDeparture(string tourDeparture) { this.tourDeparture = tourDeparture; }
-        
-        public int getTourDuration() { return tourDuration; }
-        public void setTourDuration(int tourDuration) { this.tourDuration = tourDuration; }
-        
-        public decimal getTourPrice() { return tourPrice; }
-        public void setTourPrice(decimal tourPrice) { this.tourPrice = tourPrice; }
-        
+        public string? getUserName() { return UserName; }
+        public void setUserName(string? userName) { this.UserName = userName; }
+
+        public string? getUserEmail() { return UserEmail; }
+        public void setUserEmail(string? userEmail) { this.UserEmail = userEmail; }
+
+        public string? getTourName() { return TourName; }
+        public void setTourName(string? tourName) { this.TourName = tourName; }
+
+        public string? getTourDestination() { return TourDestination; }
+        public void setTourDestination(string? tourDestination) { this.TourDestination = tourDestination; }
+
+        public string? getTourImage() { return TourImage; }
+        public void setTourImage(string? tourImage) { this.TourImage = tourImage; }
+
+        public string? getTourDeparture() { return TourDeparture; }
+        public void setTourDeparture(string? tourDeparture) { this.TourDeparture = tourDeparture; }
+
+        public int getTourDuration() { return TourDuration; }
+        public void setTourDuration(int tourDuration) { this.TourDuration = tourDuration; }
+
+        public decimal getTourPrice() { return TourPrice; }
+        public void setTourPrice(decimal tourPrice) { this.TourPrice = tourPrice; }
+
         // Helper methods
         public bool isPending()
         {
-            return "PENDING".Equals(status, StringComparison.OrdinalIgnoreCase);
+            return "PENDING".Equals(Status, StringComparison.OrdinalIgnoreCase);
         }
-        
+
         public bool isConfirmed()
         {
-            return "CONFIRMED".Equals(status, StringComparison.OrdinalIgnoreCase);
+            return "CONFIRMED".Equals(Status, StringComparison.OrdinalIgnoreCase);
         }
-        
+
         public bool isCancelled()
         {
-            return "CANCELLED".Equals(status, StringComparison.OrdinalIgnoreCase);
+            return "CANCELLED".Equals(Status, StringComparison.OrdinalIgnoreCase);
         }
-        
+
         public bool isCompleted()
         {
-            return "COMPLETED".Equals(status, StringComparison.OrdinalIgnoreCase);
+            return "COMPLETED".Equals(Status, StringComparison.OrdinalIgnoreCase);
         }
-        
+
         public string getFormattedPrice()
         {
-            if (totalPrice == 0) return "0đ";
-            return String.Format("{0:N0}đ", totalPrice);
+            if (TotalPrice == 0) return "0đ";
+            return String.Format("{0:N0}đ", TotalPrice);
         }
-        
+
         public string getFormattedDate()
         {
-            if (bookingDate == null) return "";
-            return bookingDate.Value.ToString("dd/MM/yyyy HH:mm");
+            if (BookingDate == null) return "";
+            return BookingDate.Value.ToString("dd/MM/yyyy HH:mm");
         }
-        
+
         public string getFormattedStatus()
         {
-            switch (status)
+            switch (Status)
             {
                 case "PENDING": return "Chờ xác nhận";
                 case "CONFIRMED": return "Đã xác nhận";
                 case "CANCELLED": return "Đã hủy";
                 case "COMPLETED": return "Hoàn thành";
-                default: return status;
+                default: return Status;
             }
         }
-        
+
         public override bool Equals(object? o)
         {
             if (this == o) return true;
             if (o == null || GetType() != o.GetType()) return false;
             Booking booking = (Booking)o;
-            return bookingId == booking.bookingId;
+            return BookingId == booking.BookingId;
         }
-        
+
         public override int GetHashCode()
         {
-            return HashCode.Combine(bookingId);
+            return HashCode.Combine(BookingId);
         }
     }
 }

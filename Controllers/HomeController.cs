@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TourBookingSystem.Models;
 using TourBookingSystem.DAOs;
+using TourBookingSystem.Database;
 namespace TourBookingSystem.Controllers
 {
     /**
@@ -13,13 +14,15 @@ namespace TourBookingSystem.Controllers
      */
     public class HomeController : Controller
     {
-        private TourDAO tourDAO;
-        private BookingDAO bookingDAO;
+        private readonly TourDAO tourDAO;
+        private readonly BookingDAO bookingDAO;
+        private readonly ApplicationDbContext _context;
 
-        public HomeController()
+        public HomeController(ApplicationDbContext context)
         {
-            tourDAO = new TourDAO();
-            bookingDAO = new BookingDAO();
+            _context = context;
+            tourDAO = new TourDAO(_context);
+            bookingDAO = new BookingDAO(_context);
         }
 
         /**
@@ -129,7 +132,7 @@ namespace TourBookingSystem.Controllers
                         int? userId = HttpContext.Session.GetInt32("userId");
                         if (userId.HasValue)
                         {
-                            FavoritesDAO favoritesDAO = new FavoritesDAO();
+                            FavoritesDAO favoritesDAO = new FavoritesDAO(_context);
                             ViewData["isFavorite"] = favoritesDAO.isFavorite(userId.Value, id);
                         }
                         else

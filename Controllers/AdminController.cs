@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TourBookingSystem.Models;
 using TourBookingSystem.DAOs;
+using TourBookingSystem.Database;
 
 namespace TourBookingSystem.Controllers
 {
@@ -14,17 +15,19 @@ namespace TourBookingSystem.Controllers
      */
     public class AdminController : Controller
     {
-        private UserDAO userDAO;
-        private TourDAO tourDAO;
-        private BookingDAO bookingDAO;
-        
-        public AdminController()
+        private readonly UserDAO userDAO;
+        private readonly TourDAO tourDAO;
+        private readonly BookingDAO bookingDAO;
+        private readonly ApplicationDbContext _context;
+
+        public AdminController(ApplicationDbContext context)
         {
-            userDAO = new UserDAO();
-            tourDAO = new TourDAO();
-            bookingDAO = new BookingDAO();
+            _context = context;
+            userDAO = new UserDAO(_context);
+            tourDAO = new TourDAO(_context);
+            bookingDAO = new BookingDAO(_context);
         }
-        
+
         /**
          * GET: /Admin
          */
@@ -34,12 +37,12 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string role = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(role, StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             try
             {
                 // Get dashboard statistics with defensive checks
@@ -47,27 +50,27 @@ namespace TourBookingSystem.Controllers
                 try { ViewData["totalTours"] = tourDAO.getTotalCount(); } catch { ViewData["totalTours"] = 0; }
                 try { ViewData["totalBookings"] = bookingDAO.getTotalCount(); } catch { ViewData["totalBookings"] = 0; }
                 try { ViewData["totalRevenue"] = bookingDAO.getTotalRevenue(); } catch { ViewData["totalRevenue"] = 0m; }
-                
+
                 // Get recent bookings
                 try { ViewData["recentBookings"] = bookingDAO.getRecentBookings(10); } catch { ViewData["recentBookings"] = new List<Booking>(); }
-                
+
                 // Get user statistics
                 try { ViewData["adminCount"] = userDAO.countByRole("ADMIN"); } catch { ViewData["adminCount"] = 0; }
                 try { ViewData["userCount"] = userDAO.countByRole("USER"); } catch { ViewData["userCount"] = 0; }
-                
+
             }
             catch (Exception e)
             {
                 Console.WriteLine("Admin Index error: " + e.Message);
             }
-            
+
             ViewData["userId"] = userId;
             ViewData["fullName"] = HttpContext.Session.GetString("fullName");
             ViewData["role"] = role;
-            
+
             return View();
         }
-        
+
         /**
          * GET: /Admin/Users
          */
@@ -77,14 +80,14 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             List<User> users = new List<User>();
-            
+
             try
             {
                 if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(role))
@@ -106,25 +109,25 @@ namespace TourBookingSystem.Controllers
                 {
                     users = userDAO.getAllUsers();
                 }
-                
+
                 ViewData["users"] = users;
                 ViewData["search"] = search;
                 ViewData["roleFilter"] = role;
-                
+
             }
             catch (Exception e)
             {
                 Console.WriteLine("Admin Users error: " + e.Message);
                 ViewData["users"] = new List<User>();
             }
-            
+
             ViewData["userId"] = userId;
             ViewData["fullName"] = HttpContext.Session.GetString("fullName");
             ViewData["role"] = sessionRole;
-            
+
             return View();
         }
-        
+
         /**
          * GET: /Admin/Tours
          */
@@ -134,14 +137,14 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             List<Tour> tours = new List<Tour>();
-            
+
             try
             {
                 if (!string.IsNullOrEmpty(status))
@@ -156,25 +159,25 @@ namespace TourBookingSystem.Controllers
                 {
                     tours = tourDAO.getAllTours();
                 }
-                
+
                 ViewData["tours"] = tours;
                 ViewData["search"] = search;
                 ViewData["statusFilter"] = status;
-                
+
             }
             catch (Exception e)
             {
                 Console.WriteLine("Admin Tours error: " + e.Message);
                 ViewData["tours"] = new List<Tour>();
             }
-            
+
             ViewData["userId"] = userId;
             ViewData["fullName"] = HttpContext.Session.GetString("fullName");
             ViewData["role"] = sessionRole;
-            
+
             return View();
         }
-        
+
         /**
          * GET: /Admin/Bookings
          */
@@ -184,14 +187,14 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             List<Booking> bookings = new List<Booking>();
-            
+
             try
             {
                 if (!string.IsNullOrEmpty(search) && !string.IsNullOrEmpty(status))
@@ -210,22 +213,22 @@ namespace TourBookingSystem.Controllers
                 {
                     bookings = bookingDAO.getAllBookings();
                 }
-                
+
                 ViewData["bookings"] = bookings;
                 ViewData["search"] = search;
                 ViewData["statusFilter"] = status;
-                
+
             }
             catch (Exception e)
             {
                 Console.WriteLine("Admin Bookings error: " + e.Message);
                 ViewData["bookings"] = new List<Booking>();
             }
-            
+
             ViewData["userId"] = userId;
             ViewData["fullName"] = HttpContext.Session.GetString("fullName");
             ViewData["role"] = sessionRole;
-            
+
             return View();
         }
 
@@ -254,7 +257,7 @@ namespace TourBookingSystem.Controllers
                 return Json(new { success = false, message = "Lỗi: " + e.Message });
             }
         }
-        
+
         /**
          * POST: /Admin/UpdateBookingStatus
          */
@@ -264,16 +267,16 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return Json(new { success = false, message = "Unauthorized" });
             }
-            
+
             try
             {
                 bool success = bookingDAO.updateStatus(bookingId, status);
-                
+
                 if (success)
                 {
                     return Json(new { success = true, message = "Cập nhật thành công!" });
@@ -289,7 +292,7 @@ namespace TourBookingSystem.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra" });
             }
         }
-        
+
         /**
          * POST: /Admin/DeleteBooking
          */
@@ -299,16 +302,16 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return Json(new { success = false, message = "Unauthorized" });
             }
-            
+
             try
             {
                 bool success = bookingDAO.delete(bookingId);
-                
+
                 if (success)
                 {
                     return Json(new { success = true, message = "Xóa thành công!" });
@@ -324,7 +327,7 @@ namespace TourBookingSystem.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra" });
             }
         }
-        
+
         /**
          * POST: /Admin/DeleteUser
          */
@@ -334,22 +337,22 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return Json(new { success = false, message = "Unauthorized" });
             }
-            
+
             // Prevent deleting yourself
             if (userIdToDelete == userId.Value)
             {
                 return Json(new { success = false, message = "Bạn không thể xóa chính mình" });
             }
-            
+
             try
             {
                 bool success = userDAO.delete(userIdToDelete);
-                
+
                 if (success)
                 {
                     return Json(new { success = true, message = "Xóa người dùng thành công!" });
@@ -365,7 +368,7 @@ namespace TourBookingSystem.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra" });
             }
         }
-        
+
         /**
          * POST: /Admin/UpdateUserRole
          */
@@ -375,16 +378,16 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return Json(new { success = false, message = "Unauthorized" });
             }
-            
+
             try
             {
                 bool success = userDAO.updateRole(userIdToUpdate, role);
-                
+
                 if (success)
                 {
                     return Json(new { success = true, message = "Cập nhật quyền thành công!" });
@@ -400,7 +403,7 @@ namespace TourBookingSystem.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra" });
             }
         }
-        
+
         /**
          * POST: /Admin/DeleteTour
          */
@@ -410,16 +413,16 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return Json(new { success = false, message = "Unauthorized" });
             }
-            
+
             try
             {
                 bool success = tourDAO.delete(tourId);
-                
+
                 if (success)
                 {
                     return Json(new { success = true, message = "Xóa tour thành công!" });
@@ -435,7 +438,7 @@ namespace TourBookingSystem.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra" });
             }
         }
-        
+
         /**
          * POST: /Admin/UpdateTourStatus
          */
@@ -445,16 +448,16 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return Json(new { success = false, message = "Unauthorized" });
             }
-            
+
             try
             {
                 bool success = tourDAO.updateStatus(tourId, status);
-                
+
                 if (success)
                 {
                     return Json(new { success = true, message = "Cập nhật trạng thái thành công!" });
@@ -479,36 +482,36 @@ namespace TourBookingSystem.Controllers
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             ViewData["userId"] = userId;
             ViewData["fullName"] = HttpContext.Session.GetString("fullName");
             ViewData["role"] = sessionRole;
-            
+
             return View();
         }
-        
+
         /**
          * POST: /Admin/CreateTour
          */
         [HttpPost]
-        public IActionResult CreateTour(string? name, string? destination, string? description, 
-                                        DateTime departureDate, int duration, decimal price, 
+        public IActionResult CreateTour(string? name, string? destination, string? description,
+                                        DateTime departureDate, int duration, decimal price,
                                         int maxParticipants, string? imageUrl, string? status)
         {
             // Check if user is logged in and is admin
             int? userId = HttpContext.Session.GetInt32("userId");
             string sessionRole = HttpContext.Session.GetString("role");
-            
+
             if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
             {
                 return Json(new { success = false, message = "Unauthorized" });
             }
-            
+
             try
             {
                 // Basic validation
@@ -530,7 +533,7 @@ namespace TourBookingSystem.Controllers
                 tour.setStatus(status == "ACTIVE" ? "ACTIVE" : "INACTIVE");
 
                 bool success = tourDAO.insert(tour);
-                
+
                 if (success)
                 {
                     return Json(new { success = true, message = "Thêm tour thành công!" });
