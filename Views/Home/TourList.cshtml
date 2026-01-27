@@ -1,271 +1,188 @@
+@using TourBookingSystem.Models
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Tất cả tour";
-    var tours = ViewData["tours"] as List<TourBookingSystem.Models.Tour>;
+    ViewData["Title"] = "Tất cả Tour Du Lịch";
+    var tours = ViewData["tours"] as List<Tour>;
     var destinations = ViewData["destinations"] as List<string>;
-    
-    // Get filter values for restoration
-    var keyword = ViewData["searchKeyword"] as string;
-    var selectedDest = ViewData["selectedDestination"] as string;
-    var depDate = ViewData["departureDate"] as string;
-    var sortBy = ViewData["selectedSortBy"] as string;
-    var minPrice = ViewData["minPrice"];
-    var maxPrice = ViewData["maxPrice"];
-    var duration = ViewData["duration"];
+    var selectedDestination = ViewData["selectedDestination"] as string;
+    var searchKeyword = ViewData["searchKeyword"] as string;
+    var departureDate = ViewData["departureDate"] as string;
+    var selectedMinPrice = ViewData["minPrice"] as decimal?;
+    var selectedMaxPrice = ViewData["maxPrice"] as decimal?;
+    var selectedDuration = ViewData["duration"] as int?;
+    var selectedSortOf = ViewData["selectedSortBy"] as string;
 }
-
-<div class="tourlist-banner">
+@section Styles {
+    <link rel="stylesheet" href="~/css/tour_list.css">
+}
+<!-- Page Header -->
+<section class="page-header">
     <div class="container">
-        <h1>Danh sách Tour Du Lịch</h1>
-        <p>Tìm thấy @(tours?.Count ?? 0) hành trình phù hợp với bạn</p>
+        <h1>Khám Phá Các Tour Du Lịch</h1>
+        <p class="lead">Hành trình tuyệt vời chờ đợi bạn</p>
     </div>
-</div>
-
-<div class="container main-content-grid">
-    <aside class="sidebar-filters">
-        <div class="filter-box">
-            <h3><i class="fas fa-filter"></i> Bộ lọc tìm kiếm</h3>
-            <form action="@Url.Action("TourList", "Home")" method="get">
-                <div class="field-item">
-                    <label>Từ khóa</label>
-                    <input type="text" name="keyword" value="@keyword" placeholder="Tên tour, địa danh...">
-                </div>
-
-                <div class="field-item">
-                    <label>Điểm đến</label>
-                    <select name="destination">
-                        <option value="">Tất cả địa điểm</option>
-                        @if (destinations != null) {
-                            foreach (var dest in destinations) {
-                                <option value="@dest" @(selectedDest == dest ? "selected" : "")>@dest</option>
-                            }
-                        }
-                    </select>
-                </div>
-
-                <div class="filter-row">
-                    <div class="field-item half">
-                        <label>Giá từ (VNĐ)</label>
-                        <input type="number" name="minPrice" value="@minPrice" placeholder="0">
-                    </div>
-                    <div class="field-item half">
-                        <label>Đến (VNĐ)</label>
-                        <input type="number" name="maxPrice" value="@maxPrice" placeholder="50tr">
-                    </div>
-                </div>
-
-                <div class="field-item">
-                    <label>Thời gian</label>
-                    <select name="duration">
-                        <option value="">Tất cả thời gian</option>
-                        <option value="1" @(duration?.ToString() == "1" ? "selected" : "")>1 ngày</option>
-                        <option value="2" @(duration?.ToString() == "2" ? "selected" : "")>2 ngày</option>
-                        <option value="3" @(duration?.ToString() == "3" ? "selected" : "")>3 ngày</option>
-                        <option value="4" @(duration?.ToString() == "4" ? "selected" : "")>4 ngày</option>
-                        <option value="5" @(duration?.ToString() == "5" ? "selected" : "")>5 ngày</option>
-                        <option value="7" @(duration?.ToString() == "7" ? "selected" : "")>Trên 5 ngày</option>
-                    </select>
-                </div>
-
-                <div class="field-item">
-                    <label>Ngày khởi hành từ</label>
-                    <input type="date" name="departure_date" value="@depDate">
-                </div>
-
-                <div class="field-item">
-                    <label>Sắp xếp theo</label>
-                    <select name="sortBy">
-                        <option value="id_desc" @(sortBy == "id_desc" ? "selected" : "")>Mới nhất</option>
-                        <option value="price_asc" @(sortBy == "price_asc" ? "selected" : "")>Giá tăng dần</option>
-                        <option value="price_desc" @(sortBy == "price_desc" ? "selected" : "")>Giá giảm dần</option>
-                        <option value="date_asc" @(sortBy == "date_asc" ? "selected" : "")>Ngày đi (Sắp tới)</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn-primary-solid btn-full">Áp dụng lọc</button>
-                <a href="@Url.Action("TourList", "Home")" class="btn-link-reset">Đặt lại mặc định</a>
-            </form>
-        </div>
-    </aside>
-
-    <div class="tour-results">
-        @if (tours != null && tours.Count > 0)
-        {
-            <div class="tour-linear-list">
-                @foreach (var tour in tours)
-                {
-                    <div class="tour-item-row">
-                        <div class="tour-item-image">
-                            <img src="@tour.getSafeImageUrl()" alt="@tour.getName()" onerror="this.src='/images/nhatrang.jpg'">
+</section>
+<!-- Main Content -->
+<section class="tour-list-section">
+    <div class="container">
+        <div class="tour-list-layout">
+            <!-- Sidebar Filters -->
+            <aside class="filters-sidebar">
+                <div class="filter-card">
+                    <h3>
+                        <i class="fas fa-filter"></i> Bộ Lọc Tìm Kiếm
+                    </h3>
+                    <form action="@Url.Action("TourList", "Home")" method="get" class="filter-form">
+                        <!-- Search by keyword -->
+                        <div class="filter-group">
+                            <label for="keyword">Từ khóa</label>
+                            <div class="search-input-wrapper">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="keyword" name="keyword" placeholder="Tên tour, địa điểm..." value="@searchKeyword">
+                            </div>
                         </div>
-                        <div class="tour-item-info">
-                            <div class="item-header">
-                                <div class="item-header-top">
-                                    <span class="item-location"><i class="fas fa-map-marker-alt"></i> @tour.getDestination()</span>
-                                    @{
-                                        var statusText = (tour.getStatus() ?? "ACTIVE").ToUpper() == "ACTIVE" ? "Hoạt động" : "Ẩn";
-                                        var statusClass = (tour.getStatus() ?? "ACTIVE").ToUpper() == "ACTIVE" ? "status-active" : "status-inactive";
+                        <!-- Destination filter -->
+                        <div class="filter-group">
+                            <label for="destination">Điểm đến</label>
+                            <select id="destination" name="destination">
+                                <option value="">Tất cả điểm đến</option>
+                                @if (destinations != null)
+                                {
+                                    foreach (var dest in destinations)
+                                    {
+                                        <option value="@dest" selected="@(selectedDestination == dest)">@dest</option>
                                     }
-                                    <span class="item-status @statusClass">@statusText</span>
-                                </div>
-                                <h3>@tour.getName()</h3>
-                            </div>
-                            <div class="item-details">
-                                <div class="detail-tag"><i class="far fa-calendar-alt"></i> KH: @(tour.getDepartureDate()?.ToString("dd/MM/yyyy") ?? "Liên hệ")</div>
-                                <div class="detail-tag"><i class="far fa-clock"></i> @tour.getDuration() ngày / @(tour.getDuration()-1) đêm</div>
-                                <div class="detail-tag"><i class="fas fa-users"></i> Còn @tour.getAvailableSlots() chỗ</div>
-                            </div>
-                            <div class="item-footer">
-                                <div class="item-price">@tour.getFormattedPrice()</div>
-                                <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })" class="btn-details-solid">Xem chi tiết</a>
+                                }
+                            </select>
+                        </div>
+                        <!-- Departure Date filter -->
+                        <div class="filter-group">
+                            <label for="departure_date">Ngày khởi hành</label>
+                            <input type="date" id="departure_date" name="departure_date" value="@departureDate">
+                        </div>
+                        <!-- Price range filter -->
+                        <div class="filter-group">
+                            <label>Khoảng giá</label>
+                            <div class="price-inputs">
+                                <input type="number" name="minPrice" placeholder="Tối thiểu" value="@selectedMinPrice" min="0">
+                                <span>-</span>
+                                <input type="number" name="maxPrice" placeholder="Tối đa" value="@selectedMaxPrice" min="0">
                             </div>
                         </div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="search-empty">
-                <i class="fas fa-search-location"></i>
-                <p>Không tìm thấy tour nào phù hợp với các tiêu chí tìm kiếm của bạn.</p>
-                <a href="@Url.Action("TourList", "Home")" class="btn-primary-solid">Quay lại danh sách chính</a>
-            </div>
-        }
+                        <!-- Duration filter -->
+                        <div class="filter-group">
+                            <label for="duration">Thời gian</label>
+                            <select id="duration" name="duration">
+                                <option value="">Tất cả</option>
+                                <option value="1" selected="@(selectedDuration == 1)">1 ngày</option>
+                                <option value="2" selected="@(selectedDuration == 2)">2 ngày 1 đêm</option>
+                                <option value="3" selected="@(selectedDuration == 3)">3 ngày 2 đêm</option>
+                                <option value="4" selected="@(selectedDuration == 4)">4 ngày 3 đêm</option>
+                                <option value="5" selected="@(selectedDuration == 5)">5 ngày 4 đêm</option>
+                                <option value="7" selected="@(selectedDuration == 7)">Trên 5 ngày</option>
+                            </select>
+                        </div>
+                        <!-- Sort by -->
+                        <div class="filter-group">
+                            <label for="sortBy">Sắp xếp theo</label>
+                            <select id="sortBy" name="sortBy">
+                                <option value="">Mặc định</option>
+                                <option value="price_asc" selected="@(selectedSortOf == "price_asc")">Giá: Thấp đến cao</option>
+                                <option value="price_desc" selected="@(selectedSortOf == "price_desc")">Giá: Cao đến thấp</option>
+                                <option value="date_asc" selected="@(selectedSortOf == "date_asc")">Ngày khởi hành: Sớm nhất</option>
+                                <option value="date_desc" selected="@(selectedSortOf == "date_desc")">Ngày khởi hành: Mới nhất</option>
+                                <option value="duration_asc" selected="@(selectedSortOf == "duration_asc")">Thời gian: Ngắn nhất</option>
+                                <option value="duration_desc" selected="@(selectedSortOf == "duration_desc")">Thời gian: Dài nhất</option>
+                            </select>
+                        </div>
+                        <!-- Filter buttons -->
+                        <div class="filter-buttons">
+                            <button type="submit" class="btn btn-filter">
+                                <i class="fas fa-search"></i> Áp dụng
+                            </button>
+                            <a href="@Url.Action("TourList", "Home")" class="btn btn-reset">
+                                <i class="fas fa-redo"></i> Đặt lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </aside>
+            <!-- Tour Grid -->
+            <main class="tours-main">
+                <div class="tours-grid">
+                    @if (tours != null && tours.Any())
+                    {
+                        foreach (var tour in tours)
+                        {
+                            <div class="tour-card">
+                                <div class="tour-image">
+                                    <img src="@(tour.getImageUrl()?.StartsWith("http") == true ? tour.getImageUrl() : Url.Content("~/" + tour.getImageUrl()))" alt="@tour.getName()" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250'">
+                                </div>
+                                <div class="tour-info">
+                                    <div class="tour-destination">
+                                        @tour.getDestination()
+                                    </div>
+                                    <h3 class="tour-name">
+                                        <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })">@tour.getName()</a>
+                                    </h3>
+                                    <div class="tour-meta">
+                                        <div class="meta-item">
+                                            <span>Khởi hành: @tour.getFormattedDepartureDate()</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span>@tour.getDuration() ngày</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span>Còn @tour.getAvailableSlots() chỗ</span>
+                                        </div>
+                                    </div>
+                                    <div class="tour-footer">
+                                        <div class="tour-price">@tour.getFormattedPrice()</div>
+                                        <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })" class="btn-view">Xem chi tiết</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-results">
+                            <i class="fas fa-search-minus"></i>
+                            <p>Không tìm thấy tour nào phù hợp với yêu cầu của bạn.</p>
+                            <a href="@Url.Action("TourList", "Home")" class="btn btn-primary">Xem tất cả tour</a>
+                        </div>
+                    }
+                </div>
+            </main>
+        </div>
     </div>
-</div>
-
-<style>
-    .tourlist-banner {
-        background: #2563eb;
-        color: white;
-        padding: 40px 0;
-        margin-bottom: 40px;
-    }
-
-    .tourlist-banner h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
-    .tourlist-banner p { opacity: 0.9; }
-
-    .main-content-grid {
-        display: grid;
-        grid-template-columns: 300px 1fr;
-        gap: 30px;
-        align-items: start;
-    }
-
-    .filter-box {
-        background: white;
-        padding: 25px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        border: 1px solid #e2e8f0;
-    }
-
-    .filter-box h3 {
-        font-size: 1.1rem;
-        margin-bottom: 20px;
-        color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .field-item { margin-bottom: 15px; }
-    .field-item label { display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 5px; }
-    
-    .filter-row { display: flex; gap: 10px; }
-    .filter-row .half { flex: 1; }
-
-    .field-item input, .field-item select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        background: #f8fafc;
-    }
-
-    .btn-primary-solid {
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 12px;
-        border-radius: 6px;
-        font-weight: 700;
-        cursor: pointer;
-        text-align: center;
-        display: block;
-        text-decoration: none;
-    }
-
-    .btn-primary-solid:hover { background: #1d4ed8; }
-    .btn-full { width: 100%; margin-top: 10px; }
-
-    .btn-link-reset {
-        display: block;
-        text-align: center;
-        margin-top: 15px;
-        color: #94a3b8;
-        font-size: 0.85rem;
-        text-decoration: none;
-    }
-
-    /* List Layout */
-    .tour-linear-list { display: flex; flex-direction: column; gap: 20px; }
-
-    .tour-item-row {
-        background: white;
-        border-radius: 8px;
-        overflow: hidden;
-        display: flex;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .tour-item-image { width: 280px; min-width: 280px; height: 180px; }
-    .tour-item-image img { width: 100%; height: 100%; object-fit: cover; }
-
-    .tour-item-info { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-
-    .item-header-top { display: flex; justify-content: space-between; align-items: center; }
-    .item-location { color: #2563eb; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; }
-    .item-status { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
-    .status-active { background: #dcfce7; color: #166534; }
-    .status-inactive { background: #fee2e2; color: #991b1b; }
-    .tour-item-info h3 { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 5px 0 12px; }
-
-    .item-details { display: flex; gap: 15px; color: #64748b; font-size: 0.85rem; flex-wrap: wrap; }
-    .item-details i { color: #2563eb; }
-
-    .item-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid #f1f5f9;
-    }
-
-    .item-price { font-size: 1.35rem; font-weight: 800; color: #dc2626; }
-
-    .btn-details-solid {
-        padding: 8px 20px;
-        border: 1.5px solid #2563eb;
-        color: #2563eb;
-        border-radius: 6px;
-        font-weight: 700;
-        text-decoration: none;
-        font-size: 0.85rem;
-    }
-
-    .btn-details-solid:hover { background: #2563eb; color: white; }
-
-    .search-empty { text-align: center; padding: 60px 0; color: #94a3b8; }
-    .search-empty i { font-size: 3rem; margin-bottom: 20px; opacity: 0.3; }
-
-    @@media (max-width: 950px) {
-        .main-content-grid { grid-template-columns: 1fr; }
-        .tour-item-row { flex-direction: column; }
-        .tour-item-image { width: 100%; height: 220px; }
-    }
-</style>
+</section>
+@section Scripts {
+    <script>
+        function bookTour(tourId) {
+            var quantity = prompt("Nhập số lượng người:");
+            if (quantity != null && quantity > 0) {
+                fetch('@Url.Action("Index", "Booking")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'action=create&tourId=' + tourId + '&quantity=' + quantity
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        window.location.href = '@Url.Action("Index", "Booking")';
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra!');
+                });
+            }
+        }
+    </script>
+}

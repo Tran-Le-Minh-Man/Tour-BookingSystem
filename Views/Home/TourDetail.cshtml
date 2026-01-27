@@ -6,14 +6,11 @@
     bool isFavorite = (bool)(ViewData["isFavorite"] ?? false);
     int? userId = ViewData["userId"] as int?;
 }
-
+@section Styles {
+    <link rel="stylesheet" href="~/css/tour_detail.css" />
+}
 <div class="tour-detail-banner">
     <div class="container">
-        <div class="breadcrumb-nav">
-            <a href="@Url.Action("Index", "Home")">Trang chủ</a> / 
-            <a href="@Url.Action("TourList", "Home")">Tour du lịch</a> /
-            <span>Chi tiết</span>
-        </div>
         <h1>@Model.getName()</h1>
         <div class="banner-meta">
             <span><i class="fas fa-map-marker-alt"></i> @Model.getDestination()</span>
@@ -123,169 +120,7 @@
 </div>
 
 <style>
-    .tour-detail-banner {
-        background: #2563eb;
-        color: white;
-        padding: 40px 0;
-        margin-bottom: 30px;
-    }
-
-    .breadcrumb-nav { font-size: 0.85rem; opacity: 0.8; margin-bottom: 15px; }
-    .breadcrumb-nav a { color: white; text-decoration: none; }
-    .breadcrumb-nav a:hover { text-decoration: underline; }
-
-    .tour-detail-banner h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 15px; }
-    
-    .banner-meta { display: flex; gap: 20px; align-items: center; font-weight: 600; }
-    .banner-meta i { margin-right: 5px; color: #dbeafe; }
-
-    .badge-status {
-        padding: 4px 12px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        background: rgba(255,255,255,0.2);
-    }
-    .badge-status.active { background: #10b981; }
-    .badge-status.inactive { background: #ef4444; }
-
-    .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: 40px;
-        padding-bottom: 60px;
-    }
-
-    .main-image-box {
-        width: 100%;
-        height: 400px;
-        border-radius: 8px;
-        overflow: hidden;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .main-image-box img { width: 100%; height: 100%; object-fit: cover; }
-
-    .info-section {
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-        margin-bottom: 30px;
-    }
-
-    .section-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f1f5f9;
-    }
-
-    .description-text {
-        color: #475569;
-        line-height: 1.8;
-        font-size: 1.05rem;
-    }
-
-    .specs-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 20px;
-    }
-
-    .spec-item { padding: 15px; background: #f8fafc; border-radius: 6px; border: 1px solid #f1f5f9; }
-    .spec-label { font-size: 0.8rem; color: #64748b; font-weight: 700; margin-bottom: 5px; }
-    .spec-val { font-size: 1.1rem; font-weight: 700; color: #1e293b; }
-
-    /* Sidebar */
-    .booking-sidebar-card {
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
-
-    .price-box { margin-bottom: 25px; }
-    .price-label { font-size: 0.9rem; color: #64748b; font-weight: 600; }
-    .price-value { font-size: 2rem; font-weight: 900; color: #dc2626; margin-top: 5px; }
-
-    .form-item { margin-bottom: 15px; }
-    .form-item label { display: block; font-size: 0.85rem; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
-    .form-item input, .form-item textarea {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        font-size: 1rem;
-    }
-    .form-item textarea { height: 100px; resize: none; }
-
-    .summary-box {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px 0;
-        border-top: 1px solid #f1f5f9;
-        margin: 20px 0;
-    }
-    .summary-box span { font-weight: 700; color: #64748b; }
-    .summary-box strong { font-size: 1.5rem; color: #2563eb; font-weight: 800; }
-
-    .btn-action-primary {
-        width: 100%;
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 15px;
-        border-radius: 6px;
-        font-weight: 800;
-        font-size: 1.1rem;
-        cursor: pointer;
-        margin-bottom: 12px;
-    }
-    .btn-action-primary:hover { background: #1d4ed8; }
-
-    .btn-action-secondary {
-        width: 100%;
-        background: white;
-        border: 1.5px solid #cbd5e1;
-        padding: 12px;
-        border-radius: 6px;
-        font-weight: 700;
-        color: #64748b;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }
-    .btn-action-secondary.active { color: #ef4444; border-color: #fee2e2; background: #fff1f2; }
-
-    .sidebar-info { margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
-    .sidebar-info p { font-size: 0.85rem; color: #94a3b8; margin-bottom: 8px; }
-    .sidebar-info i { color: #10b981; margin-right: 5px; }
-
-    /* Related */
-    .related-list { display: flex; flex-direction: column; gap: 15px; }
-    .related-mini-card {
-        text-decoration: none;
-        display: flex;
-        gap: 15px;
-        padding: 10px;
-        border-radius: 6px;
-    }
-    .related-mini-card img { width: 80px; height: 60px; border-radius: 4px; object-fit: cover; }
-    .related-mini-info h4 { font-size: 0.9rem; color: #1e293b; margin-bottom: 5px; }
-    .related-mini-price { font-size: 0.85rem; color: #dc2626; font-weight: 800; }
-
-    @@media (max-width: 950px) {
-        .detail-grid { grid-template-columns: 1fr; }
-        .main-image-box { height: 300px; }
-        .booking-sidebar-card { position: static; margin-top: 20px; }
-    }
+  
 </style>
 
 <script>
