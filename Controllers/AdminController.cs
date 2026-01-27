@@ -42,19 +42,18 @@ namespace TourBookingSystem.Controllers
             
             try
             {
-                // Get dashboard statistics
-                ViewData["totalUsers"] = userDAO.getTotalCount();
-                ViewData["totalTours"] = tourDAO.getTotalCount();
-                ViewData["totalBookings"] = bookingDAO.getTotalCount();
-                ViewData["totalRevenue"] = bookingDAO.getTotalRevenue();
+                // Get dashboard statistics with defensive checks
+                try { ViewData["totalUsers"] = userDAO.getTotalCount(); } catch { ViewData["totalUsers"] = 0; }
+                try { ViewData["totalTours"] = tourDAO.getTotalCount(); } catch { ViewData["totalTours"] = 0; }
+                try { ViewData["totalBookings"] = bookingDAO.getTotalCount(); } catch { ViewData["totalBookings"] = 0; }
+                try { ViewData["totalRevenue"] = bookingDAO.getTotalRevenue(); } catch { ViewData["totalRevenue"] = 0m; }
                 
                 // Get recent bookings
-                List<Booking> recentBookings = bookingDAO.getRecentBookings(10);
-                ViewData["recentBookings"] = recentBookings;
+                try { ViewData["recentBookings"] = bookingDAO.getRecentBookings(10); } catch { ViewData["recentBookings"] = new List<Booking>(); }
                 
                 // Get user statistics
-                ViewData["adminCount"] = userDAO.countByRole("ADMIN");
-                ViewData["userCount"] = userDAO.countByRole("USER");
+                try { ViewData["adminCount"] = userDAO.countByRole("ADMIN"); } catch { ViewData["adminCount"] = 0; }
+                try { ViewData["userCount"] = userDAO.countByRole("USER"); } catch { ViewData["userCount"] = 0; }
                 
             }
             catch (Exception e)
@@ -228,6 +227,32 @@ namespace TourBookingSystem.Controllers
             ViewData["role"] = sessionRole;
             
             return View();
+        }
+
+        /**
+         * POST: /Admin/DeleteAllBookings
+         */
+        [HttpPost]
+        public IActionResult DeleteAllBookings()
+        {
+            // Check if user is logged in and is admin
+            int? userId = HttpContext.Session.GetInt32("userId");
+            string sessionRole = HttpContext.Session.GetString("role");
+
+            if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new { success = false, message = "Unauthorized" });
+            }
+
+            try
+            {
+                bool success = bookingDAO.deleteAllBookings();
+                return Json(new { success = success, message = success ? "Đã xóa tất cả đơn đặt tour thành công." : "Lỗi khi xóa dữ liệu." });
+            }
+            catch (Exception e)
+            {
+                return Json(new { success = false, message = "Lỗi: " + e.Message });
+            }
         }
         
         /**

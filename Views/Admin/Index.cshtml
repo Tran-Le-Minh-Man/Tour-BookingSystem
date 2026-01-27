@@ -1,6 +1,6 @@
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Quản trị";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Tổng quan quản trị";
     var totalUsers = ViewData["totalUsers"] ?? 0;
     var totalTours = ViewData["totalTours"] ?? 0;
     var totalBookings = ViewData["totalBookings"] ?? 0;
@@ -10,44 +10,65 @@
     var userCount = ViewData["userCount"] ?? 0;
 }
 
-<div class="admin-page">
-    <div class="page-header">
-        <h1>Quản trị hệ thống</h1>
-        <div class="admin-nav">
-            <a href="@Url.Action("Index", "Admin")" class="active">Tổng quan</a>
-            <a href="@Url.Action("Users", "Admin")">Người dùng</a>
-            <a href="@Url.Action("Tours", "Admin")">Tour</a>
-            <a href="@Url.Action("Bookings", "Admin")">Đặt tour</a>
+<div class="admin-page-title">
+    <h1><i class="fas fa-tachometer-alt"></i> Tổng quan hệ thống</h1>
+</div>
+
+<!-- Dashboard Stats -->
+<div class="stats-grid">
+    <div class="stat-card border-left-primary">
+        <div class="stat-content">
+            <div class="stat-label">Tổng người dùng</div>
+            <div class="stat-value">@totalUsers</div>
+            <div class="stat-subtext">Admin: @adminCount | User: @userCount</div>
+        </div>
+        <div class="stat-icon">
+            <i class="fas fa-users fa-2x text-gray-300"></i>
         </div>
     </div>
     
-    <!-- Dashboard Stats -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <h3>Tổng người dùng</h3>
-            <p class="stat-value">@totalUsers</p>
-            <p class="stat-detail">Admin: @adminCount | User: @userCount</p>
+    <div class="stat-card border-left-success">
+        <div class="stat-content">
+            <div class="stat-label">Tổng tour</div>
+            <div class="stat-value">@totalTours</div>
         </div>
-        <div class="stat-card">
-            <h3>Tổng tour</h3>
-            <p class="stat-value">@totalTours</p>
-        </div>
-        <div class="stat-card">
-            <h3>Tổng đơn đặt</h3>
-            <p class="stat-value">@totalBookings</p>
-        </div>
-        <div class="stat-card">
-            <h3>Doanh thu</h3>
-            <p class="stat-value">@String.Format("{0:N0}đ", totalRevenue)</p>
+        <div class="stat-icon">
+            <i class="fas fa-map-marked-alt fa-2x text-gray-300"></i>
         </div>
     </div>
+
+    <div class="stat-card border-left-info">
+        <div class="stat-content">
+            <div class="stat-label">Tổng đơn đặt</div>
+            <div class="stat-value">@totalBookings</div>
+        </div>
+        <div class="stat-icon">
+            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+        </div>
+    </div>
+
+    <div class="stat-card border-left-warning">
+        <div class="stat-content">
+            <div class="stat-label">Doanh thu</div>
+            <div class="stat-value">@String.Format("{0:N0}đ", totalRevenue)</div>
+        </div>
+        <div class="stat-icon">
+            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Bookings -->
+<div class="admin-card">
+    <div class="card-header-flex">
+        <h2 class="card-title"><i class="fas fa-history"></i> Đơn đặt gần đây</h2>
+        <a href="@Url.Action("Bookings", "Admin")" class="btn-text">Xem tất cả</a>
+    </div>
     
-    <!-- Recent Bookings -->
-    <div class="recent-section">
-        <h2>Đơn đặt gần đây</h2>
-        @if (recentBookings != null && recentBookings.Count > 0)
-        {
-            <table class="admin-table">
+    @if (recentBookings != null && recentBookings.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="premium-table">
                 <thead>
                     <tr>
                         <th>Mã</th>
@@ -62,112 +83,134 @@
                     @foreach (var booking in recentBookings)
                     {
                         <tr>
-                            <td>#@booking.getBookingId()</td>
+                            <td><strong>#@booking.getBookingId()</strong></td>
                             <td>@booking.getUserName()</td>
                             <td>@booking.getTourName()</td>
                             <td>@booking.getFormattedDate()</td>
-                            <td><span class="status-badge @booking.getStatus().ToLower()">@booking.getFormattedStatus()</span></td>
-                            <td>@booking.getFormattedPrice()</td>
+                            <td>
+                                <span class="badge badge-@booking.getStatus().ToLower()">
+                                    @booking.getFormattedStatus()
+                                </span>
+                            </td>
+                            <td class="text-primary font-weight-bold">@booking.getFormattedPrice()</td>
                         </tr>
                     }
                 </tbody>
             </table>
-        }
-        else
-        {
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-folder-open"></i>
             <p>Chưa có đơn đặt nào</p>
-        }
-    </div>
+        </div>
+    }
 </div>
 
 <style>
-    .admin-nav {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-    }
-    
-    .admin-nav a {
-        padding: 8px 16px;
-        background: #f0f0f0;
-        text-decoration: none;
-        color: #333;
-        border-radius: 5px;
-    }
-    
-    .admin-nav a.active {
-        background: #007bff;
-        color: white;
-    }
-    
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        margin: 20px 0;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
     }
-    
+
     .stat-card {
-        background: white;
-        padding: 20px;
+        background: #fff;
         border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        text-align: center;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        border: 1px solid #e3e6f0;
     }
-    
-    .stat-card h3 {
-        margin: 0 0 10px 0;
-        font-size: 14px;
-        color: #666;
+
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .border-left-info { border-left: 0.25rem solid #36b9cc !important; }
+    .border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+
+    .stat-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #4e73df;
+        margin-bottom: 0.25rem;
     }
-    
+
     .stat-value {
-        font-size: 28px;
-        font-weight: bold;
-        color: #007bff;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #5a5c69;
+    }
+
+    .stat-subtext {
+        font-size: 0.75rem;
+        color: #858796;
+    }
+
+    .stat-icon i {
+        color: #dddfeb;
+    }
+
+    .card-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #f0f1f5;
+        padding-bottom: 1rem;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #4e73df;
         margin: 0;
     }
-    
-    .stat-detail {
-        font-size: 12px;
-        color: #999;
-        margin-top: 5px;
-    }
-    
-    .admin-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    .admin-table th, .admin-table td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #eee;
-    }
-    
-    .admin-table th {
-        background: #f8f9fa;
+
+    .btn-text {
+        font-size: 0.85rem;
+        color: #4e73df;
+        text-decoration: none;
         font-weight: 600;
     }
-    
-    .status-badge {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
+
+    .btn-text:hover {
+        text-decoration: underline;
     }
-    
-    .status-badge.pending {
-        background: #fff3cd;
-        color: #856404;
+
+    .badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-block;
     }
-    
-    .status-badge.confirmed {
-        background: #d4edda;
-        color: #155724;
+
+    .badge-pending { background: #ffeeba; color: #856404; }
+    .badge-confirmed { background: #d4edda; color: #155724; }
+    .badge-cancelled { background: #f8d7da; color: #721c24; }
+    .badge-completed { background: #cce5ff; color: #004085; }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #858796;
     }
-    
-    .status-badge.cancelled {
-        background: #f8d7da;
-        color: #721c24;
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
     }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .text-primary { color: #4e73df !important; }
+    .font-weight-bold { font-weight: 700 !important; }
 </style>

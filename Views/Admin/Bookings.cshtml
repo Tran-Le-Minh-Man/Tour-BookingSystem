@@ -1,129 +1,301 @@
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Quản lý đặt tour";
     var bookings = ViewData["bookings"] as List<TourBookingSystem.Models.Booking>;
     var search = ViewData["search"] as string;
     var statusFilter = ViewData["statusFilter"] as string;
 }
 
-<div class="admin-page">
-    <div class="page-header">
-        <h1>Quản lý đặt tour</h1>
-        <div class="admin-nav">
-            <a href="@Url.Action("Index", "Admin")">Tổng quan</a>
-            <a href="@Url.Action("Users", "Admin")">Người dùng</a>
-            <a href="@Url.Action("Tours", "Admin")">Tour</a>
-            <a href="@Url.Action("Bookings", "Admin")" class="active">Đặt tour</a>
-        </div>
-    </div>
-    
+<div class="admin-page-title">
+    <h1><i class="fas fa-calendar-check"></i> Quản lý đặt tour</h1>
+</div>
+
+<div class="admin-card">
     <div class="admin-toolbar">
-        <form action="@Url.Action("Bookings", "Admin")" method="get" class="search-form">
-            <input type="text" name="search" value="@search" placeholder="Tìm theo tên khách hàng, tour...">
-            <select name="status">
-                <option value="">Tất cả trạng thái</option>
-                <option value="PENDING" @(statusFilter == "PENDING" ? "selected" : "")>Chờ xác nhận</option>
-                <option value="CONFIRMED" @(statusFilter == "CONFIRMED" ? "selected" : "")>Đã xác nhận</option>
-                <option value="CANCELLED" @(statusFilter == "CANCELLED" ? "selected" : "")>Đã hủy</option>
-                <option value="COMPLETED" @(statusFilter == "COMPLETED" ? "selected" : "")>Hoàn thành</option>
-            </select>
-            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        <form action="@Url.Action("Bookings", "Admin")" method="get" class="premium-search-form">
+            <div class="search-input-group">
+                <i class="fas fa-search"></i>
+                <input type="text" name="search" value="@search" placeholder="Mã đơn, tên khách, hoặc tour...">
+            </div>
+            <div class="filter-group">
+                <select name="status" class="premium-select">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="PENDING" @(statusFilter == "PENDING" ? "selected" : "")>Chờ xác nhận</option>
+                    <option value="CONFIRMED" @(statusFilter == "CONFIRMED" ? "selected" : "")>Đã xác nhận</option>
+                    <option value="CANCELLED" @(statusFilter == "CANCELLED" ? "selected" : "")>Đã hủy</option>
+                    <option value="COMPLETED" @(statusFilter == "COMPLETED" ? "selected" : "")>Hoàn thành</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary-premium">
+                <i class="fas fa-filter"></i> Lọc đơn hàng
+            </button>
+            <button type="button" class="btn btn-danger-premium" onclick="deleteAllBookings()" style="margin-left: auto;">
+                <i class="fas fa-trash-sweep"></i> Xóa tất cả đơn đặt
+            </button>
         </form>
     </div>
-    
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>Mã đặt</th>
-                <th>Khách hàng</th>
-                <th>Tour</th>
-                <th>Ngày đặt</th>
-                <th>Số người</th>
-                <th>Tổng tiền</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (bookings != null && bookings.Count > 0)
-            {
-                foreach (var booking in bookings)
+
+    <div class="table-responsive">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Tour</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th class="text-right">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (bookings != null && bookings.Count > 0)
+                {
+                    foreach (var booking in bookings)
+                    {
+                        <tr>
+                            <td><span class="text-muted font-weight-bold">#@booking.getBookingId()</span></td>
+                            <td>
+                                <div class="user-info-cell">
+                                    <div class="user-details">
+                                        <div class="user-name">@booking.getUserName()</div>
+                                        <div class="user-sub">@booking.getUserEmail()</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="tour-name-cell">
+                                    @booking.getTourName()
+                                    <div class="user-sub">@booking.getTourDestination()</div>
+                                </div>
+                            </td>
+                            <td>@booking.getFormattedDate()</td>
+                            <td class="text-primary font-weight-bold">@booking.getFormattedPrice()</td>
+                            <td>
+                                <span class="badge badge-@booking.getStatus().ToLower()">
+                                    @booking.getFormattedStatus()
+                                </span>
+                            </td>
+                            <td class="text-right actions-column">
+                                <div class="btn-group-premium">
+                                    @if ("PENDING".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <button class="btn-icon btn-confirm" title="Xác nhận đơn" onclick="updateStatus(@booking.getBookingId(), 'CONFIRMED')">
+                                            <i class="fas fa-check-circle"></i>
+                                        </button>
+                                        <button class="btn-icon btn-cancel" title="Hủy đơn" onclick="updateStatus(@booking.getBookingId(), 'CANCELLED')">
+                                            <i class="fas fa-times-circle"></i>
+                                        </button>
+                                    }
+                                    @if ("CONFIRMED".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <button class="btn-icon btn-complete" title="Hoàn thành" onclick="updateStatus(@booking.getBookingId(), 'COMPLETED')">
+                                            <i class="fas fa-flag-checkered"></i>
+                                        </button>
+                                    }
+                                    <button class="btn-icon btn-delete" title="Xóa đơn" onclick="deleteBooking(@booking.getBookingId())">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-                        <td>#@booking.getBookingId()</td>
-                        <td>@booking.getUserName()<br><small>@booking.getUserEmail()</small></td>
-                        <td>@booking.getTourName()<br><small>@booking.getTourDestination()</small></td>
-                        <td>@booking.getFormattedDate()</td>
-                        <td>@booking.getNumParticipants()</td>
-                        <td>@booking.getFormattedPrice()</td>
-                        <td>
-                            <span class="status-badge @booking.getStatus().ToLower()">@booking.getFormattedStatus()</span>
-                        </td>
-                        <td>
-                            @if ("PENDING".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
-                            {
-                                <button class="btn btn-success btn-sm" onclick="updateStatus(@booking.getBookingId(), 'CONFIRMED')">Xác nhận</button>
-                                <button class="btn btn-danger btn-sm" onclick="updateStatus(@booking.getBookingId(), 'CANCELLED')">Hủy</button>
-                            }
-                            else if ("CONFIRMED".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
-                            {
-                                <button class="btn btn-info btn-sm" onclick="updateStatus(@booking.getBookingId(), 'COMPLETED')">Hoàn thành</button>
-                            }
-                            <button class="btn btn-danger btn-sm" onclick="deleteBooking(@booking.getBookingId())">Xóa</button>
+                        <td colspan="7" class="no-data">
+                            <i class="fas fa-inbox"></i>
+                            <p>Không tìm thấy đơn đặt nào</p>
                         </td>
                     </tr>
                 }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="8" class="no-data">Không tìm thấy đơn đặt nào</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<style>
+    .premium-search-form {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search-input-group {
+        position: relative;
+        flex-grow: 1;
+        min-width: 250px;
+    }
+
+    .search-input-group i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #858796;
+    }
+
+    .search-input-group input {
+        width: 100%;
+        padding: 0.6rem 1rem 0.6rem 2.5rem;
+        border: 1px solid #d1d3e2;
+        border-radius: 8px;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .btn-primary-premium {
+        background: #4e73df;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-icon {
+        background: none;
+        border: none;
+        padding: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-confirm { color: #1cc88a; }
+    .btn-confirm:hover { background: #f6fffb; }
+
+    .btn-cancel { color: #f6c23e; }
+    .btn-cancel:hover { background: #fffdf5; }
+
+    .btn-complete { color: #4e73df; }
+    .btn-complete:hover { background: #f8faff; }
+
+    .btn-delete { color: #e74a3b; }
+    .btn-delete:hover { background: #fff5f5; }
+
+    .actions-column {
+        min-width: 120px;
+    }
+
+    .btn-group-premium {
+        display: flex;
+        justify-content: flex-end;
+        gap: 5px;
+    }
+
+    .tour-name-cell {
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .user-name { font-weight: 700; color: #2c3e50; }
+    .user-sub { font-size: 0.75rem; color: #858796; }
+
+    .badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-block;
+        text-align: center;
+        min-width: 100px;
+    }
+
+    .badge-pending { background: #fff3cd; color: #856404; }
+    .badge-confirmed { background: #dcfce7; color: #166534; }
+    .badge-cancelled { background: #fee2e2; color: #991b1b; }
+    .badge-completed { background: #d1ecf1; color: #0c5460; }
+
+    .text-muted { color: #858796; }
+    .text-right { text-align: right; }
+    .text-primary { color: #4e73df; }
+    .font-weight-bold { font-weight: 700; }
+
+    .no-data {
+        text-align: center;
+        padding: 4rem !important;
+        color: #858796;
+    }
+
+    .no-data i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.2;
+    }
+</style>
 
 <script>
     function updateStatus(bookingId, status) {
-        if (confirm('Bạn có chắc muốn cập nhật trạng thái đơn đặt này?')) {
+        let msg = status === 'CONFIRMED' ? 'xác nhận' : (status === 'CANCELLED' ? 'hủy' : 'hoàn thành');
+        showAdminConfirm('Xác nhận', 'Bạn có chắc muốn ' + msg + ' đơn đặt này?', function() {
+            const formData = new URLSearchParams();
+            formData.append('bookingId', bookingId);
+            formData.append('status', status);
+
             fetch('@Url.Action("UpdateBookingStatus", "Admin")', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'bookingId=' + bookingId + '&status=' + status
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
+                showAdminAlert(data.success ? 'Thành công' : 'Lỗi', data.message);
                 if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert(data.message);
+                    setTimeout(() => location.reload(), 2000);
                 }
             });
-        }
+        });
     }
-    
+
     function deleteBooking(bookingId) {
-        if (confirm('Bạn có chắc muốn xóa đơn đặt này?')) {
+        showAdminConfirm('Cảnh báo', 'Bạn có chắc muốn xóa đơn đặt này? Thao tác này không thể hoàn tác.', function() {
+            const formData = new URLSearchParams();
+            formData.append('bookingId', bookingId);
+
             fetch('@Url.Action("DeleteBooking", "Admin")', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'bookingId=' + bookingId
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
+                showAdminAlert(data.success ? 'Thành công' : 'Lỗi', data.message);
                 if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert(data.message);
+                    setTimeout(() => location.reload(), 2000);
                 }
             });
-        }
+        });
+    }
+
+    function deleteAllBookings() {
+        showAdminConfirm('CẢNH BÁO NGUY HIỂM', 'Thao tác này sẽ xóa TẤT CẢ đơn đặt tour trong hệ thống! Bạn có chắc chắn?', function() {
+            showAdminConfirm('Xác nhận cuối cùng', 'Bạn có THỰC SỰ chắc chắn muốn đặt lại toàn bộ dữ liệu đơn đặt hàng?', function() {
+                fetch('@Url.Action("DeleteAllBookings", "Admin")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showAdminAlert(data.success ? 'Thành công' : 'Lỗi', data.message);
+                    if (data.success) {
+                        setTimeout(() => location.reload(), 2000);
+                    }
+                });
+            });
+        });
     }
 </script>

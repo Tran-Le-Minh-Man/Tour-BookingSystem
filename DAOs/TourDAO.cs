@@ -577,28 +577,22 @@ namespace TourBookingSystem.DAOs
         private Tour mapResultSetToTour(OleDbDataReader rs)
         {
             Tour tour = new Tour();
-            tour.setTourId(Convert.ToInt32(rs["id"]));
-            tour.setName(rs["name"].ToString());
-            tour.setDescription(rs["description"].ToString());
-            tour.setDestination(rs["destination"].ToString());
+            tour.setTourId(rs["id"] != DBNull.Value ? Convert.ToInt32(rs["id"]) : 0);
+            tour.setName(rs["name"] != DBNull.Value ? rs["name"].ToString() : "");
+            tour.setDescription(rs["description"] != DBNull.Value ? rs["description"].ToString() : "");
+            tour.setDestination(rs["destination"] != DBNull.Value ? rs["destination"].ToString() : "");
 
             if (rs["departure_date"] != DBNull.Value)
             {
                 tour.setDepartureDate(Convert.ToDateTime(rs["departure_date"]));
             }
 
-            tour.setDuration(Convert.ToInt32(rs["duration"]));
-
-            // Handle potential null for price
-            if (rs["price"] != DBNull.Value)
-            {
-                tour.setPrice(Convert.ToDecimal(rs["price"]));
-            }
-
-            tour.setMaxParticipants(Convert.ToInt32(rs["max_participants"]));
-            tour.setCurrentParticipants(Convert.ToInt32(rs["current_participants"]));
-            tour.setImageUrl(rs["image_url"] != DBNull.Value ? rs["image_url"].ToString() : null);
-            tour.setStatus(rs["status"].ToString());
+            tour.setDuration(rs["duration"] != DBNull.Value ? Convert.ToInt32(rs["duration"]) : 0);
+            tour.setPrice(rs["price"] != DBNull.Value ? Convert.ToDecimal(rs["price"]) : 0m);
+            tour.setMaxParticipants(rs["max_participants"] != DBNull.Value ? Convert.ToInt32(rs["max_participants"]) : 0);
+            tour.setCurrentParticipants(rs["current_participants"] != DBNull.Value ? Convert.ToInt32(rs["current_participants"]) : 0);
+            tour.setImageUrl(rs["image_url"] != DBNull.Value ? rs["image_url"].ToString() : "");
+            tour.setStatus(rs["status"] != DBNull.Value ? rs["status"].ToString() : "ACTIVE");
 
             return tour;
         }

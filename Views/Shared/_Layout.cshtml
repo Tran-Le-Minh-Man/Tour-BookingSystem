@@ -35,9 +35,18 @@
             <nav class="nav-menu">
                 <ul>
                     <li>
-                        <a href="@Url.Action("Index", "Home")" class="@(currentUrl.Value == "/" || currentUrl.Value.Contains("Home") ? "active" : "")">
-                            Trang chủ
-                        </a>
+                        @if ("ADMIN".Equals(role, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <a href="@Url.Action("Index", "Admin")" class="@(currentUrl.Value.Contains("Admin") ? "active" : "")">
+                                Trang quản trị
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Index", "Home")" class="@(currentUrl.Value == "/" || currentUrl.Value.Contains("Home") ? "active" : "")">
+                                Trang chủ
+                            </a>
+                        }
                     </li>
                     @if (isLoggedIn && "USER".Equals(role, StringComparison.OrdinalIgnoreCase))
                     {
@@ -73,13 +82,7 @@
                                 <a href="@Url.Action("Logout", "Account")">
                                     <i class="fas fa-sign-out-alt"></i> Đăng xuất
                                 </a>
-                                @if ("ADMIN".Equals(role, StringComparison.OrdinalIgnoreCase))
-                                {
 
-                                    <a href="@Url.Action("Index", "Admin")">
-                                        <i class="fas fa-cogs"></i> Trang quản trị
-                                    </a>
-                                }
                             </div>
                         </li>
                         <li class="user-greeting">

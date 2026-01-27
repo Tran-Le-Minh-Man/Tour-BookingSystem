@@ -113,7 +113,7 @@ namespace TourBookingSystem.Models
             return departureDate.Value.ToString("dd/MM/yyyy");
         }
         
-        public override bool Equals(object o)
+        public override bool Equals(object? o)
         {
             if (this == o) return true;
             if (o == null || GetType() != o.GetType()) return false;

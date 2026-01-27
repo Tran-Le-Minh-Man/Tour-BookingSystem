@@ -100,7 +100,7 @@ namespace TourBookingSystem.Models
             this.tokenExpiry = tokenExpiry; 
         }
         
-        public override bool Equals(object o)
+        public override bool Equals(object? o)
         {
             if (this == o) return true;
             if (o == null || GetType() != o.GetType()) return false;

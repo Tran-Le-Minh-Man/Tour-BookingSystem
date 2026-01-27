@@ -402,6 +402,23 @@ namespace TourBookingSystem.DAOs
         }
 
         /**
+         * Delete all bookings (Reset functionality)
+         */
+        public bool deleteAllBookings()
+        {
+            string sql = "DELETE FROM " + TABLE_NAME;
+
+            using (OleDbConnection conn = DBConnection.getConnection())
+            {
+                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                {
+                    stmt.ExecuteNonQuery();
+                    return true;
+                }
+            }
+        }
+
+        /**
          * Get booking count by status
          */
         public int countByStatus(string status)
@@ -452,7 +469,7 @@ namespace TourBookingSystem.DAOs
          */
         public decimal getTotalRevenue()
         {
-            string sql = "SELECT COALESCE(SUM(total_price), 0) FROM " + TABLE_NAME +
+            string sql = "SELECT SUM(total_price) FROM " + TABLE_NAME +
                          " WHERE status IN ('CONFIRMED', 'COMPLETED')";
 
             using (OleDbConnection conn = DBConnection.getConnection())
@@ -475,7 +492,7 @@ namespace TourBookingSystem.DAOs
          */
         public decimal getRevenueByDateRange(DateTime startDate, DateTime endDate)
         {
-            string sql = "SELECT COALESCE(SUM(total_price), 0) FROM " + TABLE_NAME +
+            string sql = "SELECT SUM(total_price) FROM " + TABLE_NAME +
                          " WHERE status IN ('CONFIRMED', 'COMPLETED') " +
                          " AND booking_date BETWEEN ? AND ?";
 
@@ -543,36 +560,41 @@ namespace TourBookingSystem.DAOs
         private Booking mapResultSetToBooking(OleDbDataReader rs)
         {
             Booking booking = new Booking();
-            booking.setBookingId(Convert.ToInt32(rs["id"]));
-            booking.setUserId(Convert.ToInt32(rs["user_id"]));
-            booking.setTourId(Convert.ToInt32(rs["tour_id"]));
+            
+            // Safe mapping for required fields
+            booking.setBookingId(rs["id"] != DBNull.Value ? Convert.ToInt32(rs["id"]) : 0);
+            booking.setUserId(rs["user_id"] != DBNull.Value ? Convert.ToInt32(rs["user_id"]) : 0);
+            booking.setTourId(rs["tour_id"] != DBNull.Value ? Convert.ToInt32(rs["tour_id"]) : 0);
 
             if (rs["booking_date"] != DBNull.Value)
             {
                 booking.setBookingDate(Convert.ToDateTime(rs["booking_date"]));
             }
 
-            booking.setStatus(rs["status"].ToString());
-            booking.setNumParticipants(Convert.ToInt32(rs["num_participants"]));
+            booking.setStatus(rs["status"] != DBNull.Value ? rs["status"].ToString() : "PENDING");
+            booking.setNumParticipants(rs["num_participants"] != DBNull.Value ? Convert.ToInt32(rs["num_participants"]) : 0);
 
             if (rs["total_price"] != DBNull.Value)
             {
                 booking.setTotalPrice(Convert.ToDecimal(rs["total_price"]));
             }
+            else
+            {
+                booking.setTotalPrice(0m);
+            }
 
-            booking.setNotes(rs["notes"] != DBNull.Value ? rs["notes"].ToString() : null);
+            booking.setNotes(rs["notes"] != DBNull.Value ? rs["notes"].ToString() : "");
 
-            // Additional display fields
-            booking.setUserName(rs["user_name"] != DBNull.Value ? rs["user_name"].ToString() : null);
-            booking.setUserEmail(rs["user_email"] != DBNull.Value ? rs["user_email"].ToString() : null);
-            booking.setTourName(rs["tour_name"] != DBNull.Value ? rs["tour_name"].ToString() : null);
-            booking.setTourDestination(rs["tour_destination"] != DBNull.Value ? rs["tour_destination"].ToString() : null);
+            // Additional display fields from JOINs
+            booking.setUserName(getColumnValueSafe(rs, "user_name"));
+            booking.setUserEmail(getColumnValueSafe(rs, "user_email"));
+            booking.setTourName(getColumnValueSafe(rs, "tour_name"));
+            booking.setTourDestination(getColumnValueSafe(rs, "tour_destination"));
 
-            // Tour detail fields (may be null for some queries)
+            // Tour detail fields (via try-catch for flexible query support)
             try
             {
-                if (rs["tour_image"] != DBNull.Value)
-                    booking.setTourImage(rs["tour_image"].ToString());
+                booking.setTourImage(getColumnValueSafe(rs, "tour_image"));
                 if (rs["tour_departure"] != DBNull.Value)
                     booking.setTourDeparture(Convert.ToDateTime(rs["tour_departure"]).ToString());
                 if (rs["tour_duration"] != DBNull.Value)
@@ -580,12 +602,22 @@ namespace TourBookingSystem.DAOs
                 if (rs["tour_price"] != DBNull.Value)
                     booking.setTourPrice(Convert.ToDecimal(rs["tour_price"]));
             }
-            catch
-            {
-                // Field may not exist in all queries, ignore
-            }
+            catch { /* Ignore missing columns */ }
 
             return booking;
+        }
+
+        private string getColumnValueSafe(OleDbDataReader rs, string columnName)
+        {
+            try
+            {
+                int ordinal = rs.GetOrdinal(columnName);
+                return rs.IsDBNull(ordinal) ? "" : rs.GetValue(ordinal).ToString();
+            }
+            catch
+            {
+                return "";
+            }
         }
     }
 }

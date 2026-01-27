@@ -475,13 +475,13 @@ namespace TourBookingSystem.DAOs
          */
         public int countByRole(string role)
         {
-            string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE role = ?";
+            string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE UCASE(role) = ?";
 
             using (OleDbConnection conn = DBConnection.getConnection())
             {
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = role });
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = role.ToUpper().Trim() });
 
                     object result = stmt.ExecuteScalar();
                     if (result != null)
@@ -556,19 +556,12 @@ namespace TourBookingSystem.DAOs
         private User mapResultSetToUser(OleDbDataReader rs)
         {
             User user = new User();
-            user.setUserId(Convert.ToInt32(rs["id"]));
-            user.setEmail(rs["email"].ToString());
-
-            // For security, don't return the actual password hash
-            // The setPassword with null ensures getPassword() returns null
+            user.setUserId(rs["id"] != DBNull.Value ? Convert.ToInt32(rs["id"]) : 0);
+            user.setEmail(rs["email"] != DBNull.Value ? rs["email"].ToString() : "");
             user.setPassword(null);
-
-            user.setFullName(rs["full_name"].ToString());
-
-            string phone = rs["phone"] != DBNull.Value ? rs["phone"].ToString() : null;
-            user.setPhone(phone != null ? phone : "");
-
-            user.setRole(rs["role"].ToString());
+            user.setFullName(rs["full_name"] != DBNull.Value ? rs["full_name"].ToString() : "");
+            user.setPhone(rs["phone"] != DBNull.Value ? rs["phone"].ToString() : "");
+            user.setRole(rs["role"] != DBNull.Value ? rs["role"].ToString() : "USER");
 
             if (rs["created_at"] != DBNull.Value)
             {
@@ -579,7 +572,6 @@ namespace TourBookingSystem.DAOs
                 user.setCreatedAt("");
             }
 
-            // Map remember_token and token_expiry
             user.setRememberToken(rs["remember_token"] != DBNull.Value ? rs["remember_token"].ToString() : null);
 
             if (rs["token_expiry"] != DBNull.Value)

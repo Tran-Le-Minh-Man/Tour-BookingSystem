@@ -1,119 +1,271 @@
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Quản lý tour";
     var tours = ViewData["tours"] as List<TourBookingSystem.Models.Tour>;
     var search = ViewData["search"] as string;
     var statusFilter = ViewData["statusFilter"] as string;
 }
 
-<div class="admin-page">
-    <div class="page-header">
-        <h1>Quản lý tour</h1>
-        <div class="admin-nav">
-            <a href="@Url.Action("Index", "Admin")">Tổng quan</a>
-            <a href="@Url.Action("Users", "Admin")">Người dùng</a>
-            <a href="@Url.Action("Tours", "Admin")" class="active">Tour</a>
-            <a href="@Url.Action("Bookings", "Admin")">Đặt tour</a>
-        </div>
-    </div>
-    
+<div class="admin-page-title">
+    <h1><i class="fas fa-map-marked-alt"></i> Quản lý Tour</h1>
+</div>
+
+<div class="admin-card">
     <div class="admin-toolbar">
-        <form action="@Url.Action("Tours", "Admin")" method="get" class="search-form">
-            <input type="text" name="search" value="@search" placeholder="Tìm theo tên tour...">
-            <select name="status">
-                <option value="">Tất cả trạng thái</option>
-                <option value="ACTIVE" @(statusFilter == "ACTIVE" ? "selected" : "")>Hoạt động</option>
-                <option value="INACTIVE" @(statusFilter == "INACTIVE" ? "selected" : "")>Không hoạt động</option>
-            </select>
-            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        <form action="@Url.Action("Tours", "Admin")" method="get" class="premium-search-form">
+            <div class="search-input-group">
+                <i class="fas fa-search"></i>
+                <input type="text" name="search" value="@search" placeholder="Tìm tên tour hoặc địa điểm...">
+            </div>
+            <div class="filter-group">
+                <select name="status" class="premium-select">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="ACTIVE" @(statusFilter == "ACTIVE" ? "selected" : "")>Hoạt động</option>
+                    <option value="INACTIVE" @(statusFilter == "INACTIVE" ? "selected" : "")>Vô hiệu hóa</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary-premium">
+                <i class="fas fa-filter"></i> Lọc kết quả
+            </button>
         </form>
     </div>
-    
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Hình ảnh</th>
-                <th>Tên tour</th>
-                <th>Điểm đến</th>
-                <th>Giá</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (tours != null && tours.Count > 0)
-            {
-                foreach (var tour in tours)
+
+    <div class="table-responsive">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tour</th>
+                    <th>Địa điểm</th>
+                    <th>Giá</th>
+                    <th>Trạng thái</th>
+                    <th class="text-right">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (tours != null && tours.Count > 0)
+                {
+                    foreach (var tour in tours)
+                    {
+                        <tr>
+                            <td><span class="text-muted">#@tour.getTourId()</span></td>
+                            <td>
+                                <div class="tour-info-cell">
+                                    <img src="@tour.getImageUrl()" alt="@tour.getName()" class="tour-premium-thumb">
+                                    <div class="tour-details">
+                                        <div class="tour-title-text">@tour.getName()</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><i class="fas fa-map-marker-alt text-danger"></i> @tour.getDestination()</td>
+                            <td class="text-primary font-weight-bold">@tour.getFormattedPrice()</td>
+                            <td>
+                                <span class="badge badge-@(tour.getStatus().ToLower() == "active" ? "success" : "secondary")">
+                                    @(tour.getStatus() == "ACTIVE" ? "Hoạt động" : "Ẩn")
+                                </span>
+                            </td>
+                            <td class="text-right">
+                                <button class="btn-icon @(tour.getStatus() == "ACTIVE" ? "btn-disable" : "btn-enable")" 
+                                        title="@(tour.getStatus() == "ACTIVE" ? "Vô hiệu hóa" : "Kích hoạt")" 
+                                        onclick="updateStatus(@tour.getTourId(), '@(tour.getStatus() == "ACTIVE" ? "INACTIVE" : "ACTIVE")')">
+                                    <i class="fas @(tour.getStatus() == "ACTIVE" ? "fa-eye-slash" : "fa-eye")"></i>
+                                </button>
+                                <button class="btn-icon btn-delete" title="Xóa tour" onclick="deleteTour(@tour.getTourId())">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-                        <td>@tour.getTourId()</td>
-                        <td><img src="@tour.getImageUrl()" alt="@tour.getName()" class="tour-thumb"></td>
-                        <td>@tour.getName()</td>
-                        <td>@tour.getDestination()</td>
-                        <td>@tour.getFormattedPrice()</td>
-                        <td>
-                            <span class="status-badge @tour.getStatus().ToLower()">@tour.getStatus()</span>
-                        </td>
-                        <td>
-                            <button class="btn btn-secondary btn-sm" onclick="updateStatus(@tour.getTourId(), '@(tour.getStatus() == "ACTIVE" ? "INACTIVE" : "ACTIVE")')">
-                                @(tour.getStatus() == "ACTIVE" ? "Vô hiệu hóa" : "Kích hoạt")
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteTour(@tour.getTourId())">Xóa</button>
+                        <td colspan="6" class="no-data">
+                            <i class="fas fa-mountain"></i>
+                            <p>Không tìm thấy tour nào</p>
                         </td>
                     </tr>
                 }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="7" class="no-data">Không tìm thấy tour nào</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<style>
+    .premium-search-form {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search-input-group {
+        position: relative;
+        flex-grow: 1;
+        min-width: 250px;
+    }
+
+    .search-input-group i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #858796;
+    }
+
+    .search-input-group input {
+        width: 100%;
+        padding: 0.6rem 1rem 0.6rem 2.5rem;
+        border: 1px solid #d1d3e2;
+        border-radius: 8px;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .search-input-group input:focus {
+        border-color: #4e73df;
+    }
+
+    .premium-select {
+        padding: 0.6rem 1rem;
+        border: 1px solid #d1d3e2;
+        border-radius: 8px;
+        background: white;
+        min-width: 150px;
+    }
+
+    .btn-primary-premium {
+        background: #4e73df;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+    }
+
+    .btn-primary-premium:hover {
+        background: #2e59d9;
+    }
+
+    .tour-info-cell {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .tour-premium-thumb {
+        width: 80px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .tour-title-text {
+        font-weight: 700;
+        color: #2c3e50;
+        max-width: 250px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    .badge-success { background: #dcfce7; color: #166534; }
+    .badge-secondary { background: #f1f5f9; color: #475569; }
+
+    .btn-icon {
+        background: none;
+        border: none;
+        padding: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-disable { color: #f6c23e; }
+    .btn-disable:hover { background: #fffdf5; }
+
+    .btn-enable { color: #1cc88a; }
+    .btn-enable:hover { background: #f6fffb; }
+
+    .btn-delete { color: #e74a3b; }
+    .btn-delete:hover { background: #fff5f5; }
+
+    .text-muted { color: #858796; }
+    .text-right { text-align: right; }
+    .text-primary { color: #4e73df; }
+    .font-weight-bold { font-weight: 700; }
+
+    .no-data {
+        text-align: center;
+        padding: 4rem !important;
+        color: #858796;
+    }
+
+    .no-data i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.2;
+    }
+</style>
 
 <script>
     function updateStatus(tourId, status) {
-        if (confirm('Bạn có chắc muốn thay đổi trạng thái tour này?')) {
+        showAdminConfirm('Xác nhận', 'Bạn có chắc muốn thay đổi trạng thái hiển thị của tour này?', function() {
+            const formData = new URLSearchParams();
+            formData.append('tourId', tourId);
+            formData.append('status', status);
+
             fetch('@Url.Action("UpdateTourStatus", "Admin")', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'tourId=' + tourId + '&status=' + status
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
+                showAdminAlert(data.success ? 'Thành công' : 'Lỗi', data.message);
                 if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert(data.message);
+                    setTimeout(() => location.reload(), 2000);
                 }
             });
-        }
+        });
     }
     
     function deleteTour(tourId) {
-        if (confirm('Bạn có chắc muốn xóa tour này?')) {
+        showAdminConfirm('Cảnh báo', 'Bạn có chắc muốn xóa tour này? Thao tác này không thể hoàn tác.', function() {
+            const formData = new URLSearchParams();
+            formData.append('tourId', tourId);
+
             fetch('@Url.Action("DeleteTour", "Admin")', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'tourId=' + tourId
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
+                showAdminAlert(data.success ? 'Thành công' : 'Lỗi', data.message);
                 if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert(data.message);
+                    setTimeout(() => location.reload(), 2000);
                 }
             });
-        }
+        });
     }
 </script>

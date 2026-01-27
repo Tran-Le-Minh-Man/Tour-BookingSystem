@@ -1,128 +1,284 @@
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Quản lý người dùng";
     var users = ViewData["users"] as List<TourBookingSystem.Models.User>;
     var search = ViewData["search"] as string;
     var roleFilter = ViewData["roleFilter"] as string;
+    var currentUserId = ViewData["userId"] as int?;
 }
 
-<div class="admin-page">
-    <div class="page-header">
-        <h1>Quản lý người dùng</h1>
-        <div class="admin-nav">
-            <a href="@Url.Action("Index", "Admin")">Tổng quan</a>
-            <a href="@Url.Action("Users", "Admin")" class="active">Người dùng</a>
-            <a href="@Url.Action("Tours", "Admin")">Tour</a>
-            <a href="@Url.Action("Bookings", "Admin")">Đặt tour</a>
-        </div>
-    </div>
+<div class="admin-page-title">
+    <h1><i class="fas fa-users"></i> Quản lý người dùng</h1>
+</div>
 
+<div class="admin-card">
     <div class="admin-toolbar">
-        <form action="@Url.Action("Users", "Admin")" method="get" class="search-form">
-            <input type="text" name="search" value="@search" placeholder="Tìm theo tên, email...">
-            <select name="role">
-                <option value="">Tất cả vai trò</option>
-                <option value="ADMIN" @(roleFilter == "ADMIN" ? "selected" : "")>Admin</option>
-                <option value="USER" @(roleFilter == "USER" ? "selected" : "")>User</option>
-            </select>
-            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        <form action="@Url.Action("Users", "Admin")" method="get" class="premium-search-form">
+            <div class="search-input-group">
+                <i class="fas fa-search"></i>
+                <input type="text" name="search" value="@search" placeholder="Tìm theo tên, email...">
+            </div>
+            <div class="filter-group">
+                <select name="role" class="premium-select">
+                    <option value="">Tất cả vai trò</option>
+                    <option value="ADMIN" @(roleFilter == "ADMIN" ? "selected" : "")>Admin</option>
+                    <option value="USER" @(roleFilter == "USER" ? "selected" : "")>User</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary-premium">
+                <i class="fas fa-filter"></i> Lọc dữ liệu
+            </button>
         </form>
     </div>
 
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Họ tên</th>
-                <th>Email</th>
-                <th>Số điện thoại</th>
-                <th>Vai trò</th>
-                <th>Ngày tạo</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (users != null && users.Count > 0)
-            {
-                foreach (var user in users)
+    <div class="table-responsive">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Vai trò</th>
+                    <th>Ngày tạo</th>
+                    <th class="text-right">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (users != null && users.Count > 0)
+                {
+                    foreach (var user in users)
+                    {
+                        <tr>
+                            <td><span class="text-muted">#@user.getUserId()</span></td>
+                            <td>
+                                <div class="user-info-cell">
+                                    <div class="user-avatar">@user.getFullName().Substring(0, 1).ToUpper()</div>
+                                    <div class="user-details">
+                                        <div class="user-name">@user.getFullName()</div>
+                                        <div class="user-sub">@user.getPhone()</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@user.getEmail()</td>
+                            <td>
+                                <select class="role-select badge-select @(user.getRole().ToLower())" 
+                                        onchange="updateRole(@user.getUserId(), this.value)" 
+                                        @(user.getUserId() == currentUserId ? "disabled" : "")>
+                                    <option value="USER" @(user.getRole() == "USER" ? "selected" : "")>USER</option>
+                                    <option value="ADMIN" @(user.getRole() == "ADMIN" ? "selected" : "")>ADMIN</option>
+                                </select>
+                            </td>
+                            <td>@user.getCreatedAt()</td>
+                            <td class="text-right">
+                                @if (user.getUserId() != currentUserId)
+                                {
+                                    <button class="btn-icon btn-delete" title="Xóa người dùng" onclick="deleteUser(@user.getUserId())">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                }
+                                else {
+                                    <span class="badge badge-info">Bạn</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-                        <td>@user.getUserId()</td>
-                        <td>@user.getFullName()</td>
-                        <td>@user.getEmail()</td>
-                        <td>@user.getPhone()</td>
-                        <td>
-                            @{
-                                var currentUserId = ViewData["userId"] as int?;
-                                var currentUserIdStr = ViewData["userId"]?.ToString();
-                            }
-                            <select onchange="updateRole(@user.getUserId(), this.value)" @(user.getUserId() == currentUserId ? "disabled" : "")>
-                                <option value="USER" @(user.getRole() == "USER" ? "selected" : "")>User</option>
-                                <option value="ADMIN" @(user.getRole() == "ADMIN" ? "selected" : "")>Admin</option>
-                            </select>
-                        </td>
-                        <td>@user.getCreatedAt()</td>
-                        <td>
-                            @if (user.getUserId() != currentUserId)
-                            {
-                                <button class="btn btn-danger btn-sm" onclick="deleteUser(@user.getUserId())">Xóa</button>
-                            }
+                        <td colspan="6" class="no-data">
+                            <i class="fas fa-search-minus"></i>
+                            <p>Không tìm thấy người dùng nào</p>
                         </td>
                     </tr>
                 }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="7" class="no-data">Không tìm thấy người dùng nào</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<style>
+    .premium-search-form {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search-input-group {
+        position: relative;
+        flex-grow: 1;
+        min-width: 250px;
+    }
+
+    .search-input-group i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #858796;
+    }
+
+    .search-input-group input {
+        width: 100%;
+        padding: 0.6rem 1rem 0.6rem 2.5rem;
+        border: 1px solid #d1d3e2;
+        border-radius: 8px;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .search-input-group input:focus {
+        border-color: #4e73df;
+    }
+
+    .premium-select {
+        padding: 0.6rem 1rem;
+        border: 1px solid #d1d3e2;
+        border-radius: 8px;
+        background: white;
+        min-width: 150px;
+    }
+
+    .btn-primary-premium {
+        background: #4e73df;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+    }
+
+    .btn-primary-premium:hover {
+        background: #2e59d9;
+    }
+
+    .user-info-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        background: #4e73df;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .user-sub {
+        font-size: 0.75rem;
+        color: #858796;
+    }
+
+    .role-select {
+        border: none;
+        padding: 0.3rem 0.6rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        cursor: pointer;
+        appearance: none;
+        text-align: center;
+    }
+
+    .role-select.admin { background: #fee2e2; color: #991b1b; }
+    .role-select.user { background: #dcfce7; color: #166534; }
+
+    .btn-icon {
+        background: none;
+        border: none;
+        padding: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-delete { color: #e74a3b; }
+    .btn-delete:hover { background: #fff5f5; }
+
+    .text-muted { color: #858796; }
+    .text-right { text-align: right; }
+
+    .no-data {
+        text-align: center;
+        padding: 4rem !important;
+        color: #858796;
+    }
+
+    .no-data i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.2;
+    }
+</style>
 
 <script>
     function updateRole(userId, role) {
-        if (confirm('Bạn có chắc muốn thay đổi vai trò người dùng này?')) {
+        showAdminConfirm('Xác nhận', 'Bạn có chắc muốn thay đổi vai trò người dùng này?', function() {
+            const formData = new URLSearchParams();
+            formData.append('userIdToUpdate', userId);
+            formData.append('role', role);
+
             fetch('@Url.Action("UpdateUserRole", "Admin")', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'userIdToUpdate=' + userId + '&role=' + role
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                } else {
-                    alert(data.message);
-                    location.reload();
+                showAdminAlert(data.success ? 'Thành công' : 'Lỗi', data.message);
+                if (!data.success) {
+                    setTimeout(() => location.reload(), 2000);
                 }
             });
-        } else {
-            location.reload();
-        }
+        });
+        
+        // Handle cancel outside the callback if needed, but showAdminConfirm handles it
     }
 
     function deleteUser(userId) {
-        if (confirm('Bạn có chắc muốn xóa người dùng này?')) {
+        showAdminConfirm('Cảnh báo', 'Bạn có chắc muốn xóa người dùng này? Thao tác này không thể hoàn tác.', function() {
+            const formData = new URLSearchParams();
+            formData.append('userIdToDelete', userId);
+
             fetch('@Url.Action("DeleteUser", "Admin")', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'userIdToDelete=' + userId
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
+                showAdminAlert(data.success ? 'Thành công' : 'Lỗi', data.message);
                 if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert(data.message);
+                    setTimeout(() => location.reload(), 2000);
                 }
             });
-        }
+        });
+    }
+
+    function showToast(message, type) {
+        showAdminAlert(type === 'success' ? 'Thành công' : 'Thông báo', message);
     }
 </script>

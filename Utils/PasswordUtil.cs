@@ -10,7 +10,7 @@ namespace TourBookingSystem.Utils
      */
     public class PasswordUtil
     {
-        private static readonly int SALT_WORK_FACTOR = 10;
+
         
         /**
          * Hash a password using BCrypt-like algorithm

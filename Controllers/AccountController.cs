@@ -15,7 +15,7 @@ namespace TourBookingSystem.Controllers
     public class AccountController : Controller
     {
         private UserDAO userDAO;
-        private static readonly int REMEMBER_ME_COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 days in seconds
+
         private static readonly int MAX_LOGIN_ATTEMPTS = 5;
         private static readonly int LOCKOUT_TIME = 15 * 60; // 15 minutes in seconds
 
@@ -193,7 +193,11 @@ namespace TourBookingSystem.Controllers
                     Response.Cookies.Append("auth_token", token, cookieOptions);
                 }
 
-                // Redirect to home page
+                // Redirect based on role
+                if ("ADMIN".Equals(user.getRole(), StringComparison.OrdinalIgnoreCase))
+                {
+                    return RedirectToAction("Index", "Admin");
+                }
                 return RedirectToAction("Index", "Home");
 
             }
@@ -375,7 +379,7 @@ namespace TourBookingSystem.Controllers
         private string generateSecureToken()
         {
             byte[] bytes = new byte[64]; // 512 bits
-            using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
+            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
             {
                 rng.GetBytes(bytes);
             }
