@@ -32,7 +32,8 @@ namespace TourBookingSystem.Controllers
             }
             catch (Exception e)
             {
-                Console.WriteLine("Favorites error: " + e.Message);
+                Console.WriteLine("FavoritesController.Index ERROR: " + e.Message);
+                TempData["error"] = "Không thể tải danh sách yêu thích: " + e.Message;
                 ViewData["favorites"] = new List<Dictionary<string, object>>();
             }
 
@@ -73,7 +74,10 @@ namespace TourBookingSystem.Controllers
             }
             catch (Exception e)
             {
-                return Json(new { success = false, message = "Lỗi: " + e.Message });
+                string detail = e.Message;
+                if (e.InnerException != null) detail += " -> " + e.InnerException.Message;
+                Console.WriteLine("FavoritesController.Toggle ERROR: " + detail);
+                return Json(new { success = false, message = "Lỗi hệ thống: " + detail });
             }
         }
     }

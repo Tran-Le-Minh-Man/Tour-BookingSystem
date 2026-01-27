@@ -470,5 +470,81 @@ namespace TourBookingSystem.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra" });
             }
         }
+        /**
+         * GET: /Admin/CreateTour
+         */
+        [HttpGet]
+        public IActionResult CreateTour()
+        {
+            // Check if user is logged in and is admin
+            int? userId = HttpContext.Session.GetInt32("userId");
+            string sessionRole = HttpContext.Session.GetString("role");
+            
+            if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            ViewData["userId"] = userId;
+            ViewData["fullName"] = HttpContext.Session.GetString("fullName");
+            ViewData["role"] = sessionRole;
+            
+            return View();
+        }
+        
+        /**
+         * POST: /Admin/CreateTour
+         */
+        [HttpPost]
+        public IActionResult CreateTour(string? name, string? destination, string? description, 
+                                        DateTime departureDate, int duration, decimal price, 
+                                        int maxParticipants, string? imageUrl, string? status)
+        {
+            // Check if user is logged in and is admin
+            int? userId = HttpContext.Session.GetInt32("userId");
+            string sessionRole = HttpContext.Session.GetString("role");
+            
+            if (!userId.HasValue || !"ADMIN".Equals(sessionRole, StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new { success = false, message = "Unauthorized" });
+            }
+            
+            try
+            {
+                // Basic validation
+                if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(destination))
+                {
+                    return Json(new { success = false, message = "Tên tour và địa điểm không được để trống" });
+                }
+
+                Tour tour = new Tour();
+                tour.setName(name);
+                tour.setDestination(destination);
+                tour.setDescription(description);
+                tour.setDepartureDate(departureDate);
+                tour.setDuration(duration);
+                tour.setPrice(price);
+                tour.setMaxParticipants(maxParticipants);
+                tour.setCurrentParticipants(0);
+                tour.setImageUrl(imageUrl);
+                tour.setStatus(status == "ACTIVE" ? "ACTIVE" : "INACTIVE");
+
+                bool success = tourDAO.insert(tour);
+                
+                if (success)
+                {
+                    return Json(new { success = true, message = "Thêm tour thành công!" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Thêm tour thất bại" });
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("CreateTour error: " + e.Message);
+                return Json(new { success = false, message = "Lỗi: " + e.Message });
+            }
+        }
     }
 }

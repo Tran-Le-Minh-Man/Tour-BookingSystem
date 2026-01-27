@@ -8,6 +8,9 @@
 
 <div class="admin-page-title">
     <h1><i class="fas fa-map-marked-alt"></i> Quản lý Tour</h1>
+    <a href="@Url.Action("CreateTour", "Admin")" class="btn btn-primary-premium">
+        <i class="fas fa-plus-circle"></i> Thêm Tour mới
+    </a>
 </div>
 
 <div class="admin-card">
@@ -51,7 +54,7 @@
                             <td><span class="text-muted">#@tour.getTourId()</span></td>
                             <td>
                                 <div class="tour-info-cell">
-                                    <img src="@tour.getImageUrl()" alt="@tour.getName()" class="tour-premium-thumb">
+                                    <img src="@tour.getSafeImageUrl()" alt="@tour.getName()" class="tour-premium-thumb">
                                     <div class="tour-details">
                                         <div class="tour-title-text">@tour.getName()</div>
                                     </div>

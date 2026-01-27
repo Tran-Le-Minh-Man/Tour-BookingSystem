@@ -1,0 +1,222 @@
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Thêm tour mới";
+}
+
+<div class="admin-page-title">
+    <h1><i class="fas fa-plus-circle"></i> Thêm Tour du lịch mới</h1>
+    <a href="@Url.Action("Tours", "Admin")" class="btn btn-secondary-premium">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<div class="admin-card">
+    <form id="createTourForm" class="premium-form">
+        <div class="form-row">
+            <div class="form-group col-md-8">
+                <label for="name"><i class="fas fa-heading"></i> Tên Tour</label>
+                <input type="text" id="name" name="name" class="form-control-premium" placeholder="Ví dụ: Tour Đà Nẵng - Hội An - Bà Nà Hills" required>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="destination"><i class="fas fa-map-marker-alt"></i> Điểm đến</label>
+                <input type="text" id="destination" name="destination" class="form-control-premium" placeholder="Ví dụ: Đà Nẵng" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="description"><i class="fas fa-align-left"></i> Mô tả chi tiết</label>
+            <textarea id="description" name="description" class="form-control-premium" rows="5" placeholder="Mô tả về hành trình tour..."></textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="price"><i class="fas fa-tag"></i> Giá (VNĐ)</label>
+                <input type="number" id="price" name="price" class="form-control-premium" placeholder="0" required min="0">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="duration"><i class="fas fa-calendar-day"></i> Thời gian (Ngày)</label>
+                <input type="number" id="duration" name="duration" class="form-control-premium" placeholder="1" required min="1">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="departureDate"><i class="fas fa-plane-departure"></i> Ngày khởi hành</label>
+                <input type="date" id="departureDate" name="departureDate" class="form-control-premium" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="maxParticipants"><i class="fas fa-users"></i> Số người tối đa</label>
+                <input type="number" id="maxParticipants" name="maxParticipants" class="form-control-premium" placeholder="20" required min="1">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="status"><i class="fas fa-info-circle"></i> Trạng thái</label>
+                <select id="status" name="status" class="form-control-premium">
+                    <option value="ACTIVE">Hoạt động (Công khai)</option>
+                    <option value="INACTIVE">Vô hiệu hóa (Ẩn)</option>
+                </select>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="imageUrl"><i class="fas fa-link"></i> Link ảnh hoặc Đường dẫn</label>
+                <input type="text" id="imageUrl" name="imageUrl" class="form-control-premium" placeholder="https://example.com/image.jpg hoặc /images/tour.jpg">
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <button type="reset" class="btn btn-light-premium">
+                <i class="fas fa-undo"></i> Nhập lại
+            </button>
+            <button type="submit" class="btn btn-primary-submit">
+                <i class="fas fa-save"></i> Tạo Tour mới
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .premium-form {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .col-md-8 { flex: 2; }
+    .col-md-4 { flex: 1; }
+
+    .form-group {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group label {
+        font-weight: 700;
+        color: #4a5568;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-group label i {
+        color: var(--admin-primary);
+        width: 16px;
+    }
+
+    .form-control-premium {
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        outline: none;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+    }
+
+    .form-control-premium:focus {
+        border-color: var(--admin-primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    textarea.form-control-premium {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .form-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #edf2f7;
+    }
+
+    .btn {
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-secondary-premium {
+        background: #edf2f7;
+        color: #4a5568;
+        font-size: 0.9rem;
+    }
+
+    .btn-secondary-premium:hover {
+        background: #e2e8f0;
+    }
+
+    .btn-light-premium {
+        background: #f7fafc;
+        color: #718096;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-light-premium:hover {
+        background: #edf2f7;
+    }
+
+    .btn-primary-submit {
+        background: var(--admin-primary);
+        color: white;
+        box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+    }
+
+    .btn-primary-submit:hover {
+        background: var(--admin-secondary);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 12px rgba(67, 97, 238, 0.3);
+    }
+
+    @@media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+    }
+</style>
+
+<script>
+    document.getElementById('createTourForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const formData = new URLSearchParams(new FormData(form));
+        
+        fetch('@Url.Action("CreateTour", "Admin")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAdminAlert('Thành công', 'Đã tạo tour mới thành công!');
+                setTimeout(() => {
+                    window.location.href = '@Url.Action("Tours", "Admin")';
+                }, 1500);
+            } else {
+                showAdminAlert('Lỗi', data.message || 'Có lỗi xảy ra khi tạo tour.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAdminAlert('Lỗi', 'Không thể kết nối đến máy chủ.');
+        });
+    });
+</script>

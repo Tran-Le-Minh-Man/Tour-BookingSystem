@@ -24,6 +24,7 @@
         var fullName = ViewData["fullName"]?.ToString() ?? "User";
         var role = ViewData["role"]?.ToString();
         var isLoggedIn = userId != null;
+        var isAdminArea = currentUrl.Value.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase);
     }
     <header class="navbar sticky-header">
         <div class="container nav-content">
@@ -34,16 +35,19 @@
             </div>
             <nav class="nav-menu">
                 <ul>
-                    <li>
-                        <a href="@Url.Action("Index", "Home")" class="@(currentUrl.Value == "/" || currentUrl.Value == "/Home" || currentUrl.Value == "/Home/Index" ? "active" : "")">
-                            Trang chủ
-                        </a>
-                    </li>
-                    <li>
-                        <a href="@Url.Action("TourList", "Home")" class="@(currentUrl.Value.Contains("TourList") ? "active" : "")">
-                            Tour du lịch
-                        </a>
-                    </li>
+                    @if (!isAdminArea)
+                    {
+                        <li>
+                            <a href="@Url.Action("Index", "Home")" class="@(currentUrl.Value == "/" || currentUrl.Value == "/Home" || currentUrl.Value == "/Home/Index" ? "active" : "")">
+                                Trang chủ
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("TourList", "Home")" class="@(currentUrl.Value.Contains("TourList") ? "active" : "")">
+                                Tour du lịch
+                            </a>
+                        </li>
+                    }
                     @if (isLoggedIn)
                     {
                         @if ("USER".Equals(role, StringComparison.OrdinalIgnoreCase))
@@ -60,7 +64,7 @@
                             </li>
                         }
                         
-                        @if ("ADMIN".Equals(role, StringComparison.OrdinalIgnoreCase))
+                        @if ("ADMIN".Equals(role, StringComparison.OrdinalIgnoreCase) && !isAdminArea)
                         {
                             <li>
                                 <a href="@Url.Action("Index", "Admin")" class="btn-admin-portal">
@@ -110,38 +114,41 @@
         @RenderBody()
     </main>
 
-    <footer class="main-footer">
-        <div class="container footer-grid">
-            <div class="footer-brand">
-                <a href="#" class="footer-logo"><span class="logo-accent">Việt Nam</span> Travel</a>
-                <p>Khám phá vẻ đẹp bất tận của dải đất hình chữ S cùng chúng tôi.</p>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
+    @if (!isAdminArea)
+    {
+        <footer class="main-footer">
+            <div class="container footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="footer-logo"><span class="logo-accent">Việt Nam</span> Travel</a>
+                    <p>Khám phá vẻ đẹp bất tận của dải đất hình chữ S cùng chúng tôi.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Liên kết</h4>
+                    <ul>
+                        <li><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                        <li><a href="@Url.Action("TourList", "Home")">Tour du lịch</a></li>
+                        <li><a href="#">Về chúng tôi</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Liên hệ</h4>
+                    <p><i class="fas fa-phone"></i> 1900 1234</p>
+                    <p><i class="fas fa-envelope"></i> contact@vntravel.com</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Hà Nội, Việt Nam</p>
                 </div>
             </div>
-            <div class="footer-links">
-                <h4>Liên kết</h4>
-                <ul>
-                    <li><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
-                    <li><a href="@Url.Action("TourList", "Home")">Tour du lịch</a></li>
-                    <li><a href="#">Về chúng tôi</a></li>
-                </ul>
+            <div class="footer-bottom">
+                <div class="container">
+                    <p>&copy; 2025 Việt Nam Travel - Đồ án lập trình web cao cấp</p>
+                </div>
             </div>
-            <div class="footer-contact">
-                <h4>Liên hệ</h4>
-                <p><i class="fas fa-phone"></i> 1900 1234</p>
-                <p><i class="fas fa-envelope"></i> contact@vntravel.com</p>
-                <p><i class="fas fa-map-marker-alt"></i> Hà Nội, Việt Nam</p>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="container">
-                <p>&copy; 2025 Việt Nam Travel - Đồ án lập trình web cao cấp</p>
-            </div>
-        </div>
-    </footer>
+        </footer>
+    }
 
     <!-- Global Modal Implementation -->
     <div id="userModalOverlay" class="user-modal-overlay">

@@ -12,7 +12,7 @@ namespace TourBookingSystem.DAOs
      */
     public class FavoritesDAO
     {
-        private static readonly string TABLE_NAME = "[favorites]";
+        private static readonly string TABLE_NAME = "[user_favorites]";
 
         /**
          * Custom exception for database operations
@@ -34,39 +34,55 @@ namespace TourBookingSystem.DAOs
          */
         public List<Dictionary<string, object>> getFavoritesByUserId(int userId)
         {
-            string sql = "SELECT f.*, t.name as tour_name, t.destination as tour_destination, " +
+            string sql = "SELECT f.favorite_id, f.user_id, f.tour_id, f.created_at, " +
+                         "t.name as tour_name, t.destination as tour_destination, " +
                          "t.image_url as tour_image, t.price as tour_price, t.duration as tour_duration " +
                          "FROM " + TABLE_NAME + " f " +
                          "LEFT JOIN [tours] t ON f.tour_id = t.id " +
                          "WHERE f.user_id = ? " +
-                         "ORDER BY f.id DESC";
+                         "ORDER BY f.favorite_id DESC";
 
             List<Dictionary<string, object>> favorites = new List<Dictionary<string, object>>();
 
-            using (OleDbConnection conn = DBConnection.getConnection())
+            try
             {
-                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                using (OleDbConnection conn = DBConnection.getConnection())
                 {
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
-
-                    using (OleDbDataReader rs = stmt.ExecuteReader())
+                    using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                     {
-                        while (rs.Read())
+                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+
+                        using (OleDbDataReader rs = stmt.ExecuteReader())
                         {
-                            Dictionary<string, object> fav = new Dictionary<string, object>();
-                            fav["id"] = Convert.ToInt32(rs["id"]);
-                            fav["user_id"] = Convert.ToInt32(rs["user_id"]);
-                            fav["tour_id"] = Convert.ToInt32(rs["tour_id"]);
-                            fav["created_at"] = rs["created_at"] != DBNull.Value ? Convert.ToDateTime(rs["created_at"]) : DateTime.MinValue;
-                            fav["tour_name"] = rs["tour_name"] != DBNull.Value ? rs["tour_name"].ToString() : null;
-                            fav["tour_destination"] = rs["tour_destination"] != DBNull.Value ? rs["tour_destination"].ToString() : null;
-                            fav["tour_image"] = rs["tour_image"] != DBNull.Value ? rs["tour_image"].ToString() : null;
-                            fav["tour_price"] = rs["tour_price"] != DBNull.Value ? Convert.ToDecimal(rs["tour_price"]) : 0;
-                            fav["tour_duration"] = rs["tour_duration"] != DBNull.Value ? Convert.ToInt32(rs["tour_duration"]) : 0;
-                            favorites.Add(fav);
+                            while (rs.Read())
+                            {
+                                try
+                                {
+                                    Dictionary<string, object> fav = new Dictionary<string, object>();
+                                    fav["id"] = rs["favorite_id"] != DBNull.Value ? Convert.ToInt32(rs["favorite_id"]) : 0;
+                                    fav["user_id"] = rs["user_id"] != DBNull.Value ? Convert.ToInt32(rs["user_id"]) : 0;
+                                    fav["tour_id"] = rs["tour_id"] != DBNull.Value ? Convert.ToInt32(rs["tour_id"]) : 0;
+                                    fav["created_at"] = rs["created_at"] != DBNull.Value ? Convert.ToDateTime(rs["created_at"]) : DateTime.MinValue;
+                                    fav["tour_name"] = rs["tour_name"] != DBNull.Value ? rs["tour_name"].ToString() : "";
+                                    fav["tour_destination"] = rs["tour_destination"] != DBNull.Value ? rs["tour_destination"].ToString() : "";
+                                    fav["tour_image"] = rs["tour_image"] != DBNull.Value ? rs["tour_image"].ToString() : "";
+                                    fav["tour_price"] = rs["tour_price"] != DBNull.Value ? Convert.ToDecimal(rs["tour_price"]) : 0m;
+                                    fav["tour_duration"] = rs["tour_duration"] != DBNull.Value ? Convert.ToInt32(rs["tour_duration"]) : 0;
+                                    favorites.Add(fav);
+                                }
+                                catch (Exception inner)
+                                {
+                                    Console.WriteLine("Error mapping favorite row: " + inner.Message);
+                                }
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("FavoritesDAO.getFavoritesByUserId error: " + e.Message);
+                throw new FavoritesDAOException("getFavoritesByUserId", "Error retrieving favorites", e);
             }
 
             return favorites;
@@ -79,19 +95,26 @@ namespace TourBookingSystem.DAOs
         {
             string sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE user_id = ? AND tour_id = ?";
 
-            using (OleDbConnection conn = DBConnection.getConnection())
+            try
             {
-                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                using (OleDbConnection conn = DBConnection.getConnection())
                 {
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tourId });
-
-                    object result = stmt.ExecuteScalar();
-                    if (result != null)
+                    using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                     {
-                        return Convert.ToInt32(result) > 0;
+                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tourId });
+
+                        object result = stmt.ExecuteScalar();
+                        if (result != null)
+                        {
+                            return Convert.ToInt32(result) > 0;
+                        }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("FavoritesDAO.isFavorite error: " + e.Message);
             }
 
             return false;
@@ -102,25 +125,33 @@ namespace TourBookingSystem.DAOs
          */
         public bool addFavorite(int userId, int tourId)
         {
-            // Check if already exists
-            if (isFavorite(userId, tourId))
+            try
             {
-                return true; // Already in favorites
-            }
-
-            string sql = "INSERT INTO " + TABLE_NAME + " (user_id, tour_id, created_at) VALUES (?, ?, ?)";
-
-            using (OleDbConnection conn = DBConnection.getConnection())
-            {
-                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                // Check if already exists
+                if (isFavorite(userId, tourId))
                 {
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tourId });
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Date) { Value = DateTime.Now });
-
-                    int rowsAffected = stmt.ExecuteNonQuery();
-                    return rowsAffected > 0;
+                    return true; // Already in favorites
                 }
+
+                string sql = "INSERT INTO " + TABLE_NAME + " (user_id, tour_id, created_at) VALUES (?, ?, ?)";
+
+                using (OleDbConnection conn = DBConnection.getConnection())
+                {
+                    using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                    {
+                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tourId });
+                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Date) { Value = DateTime.Now });
+
+                        int rowsAffected = stmt.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("FavoritesDAO.addFavorite error: " + e.Message);
+                throw new FavoritesDAOException("addFavorite", "Error adding favorite", e);
             }
         }
 
@@ -131,16 +162,24 @@ namespace TourBookingSystem.DAOs
         {
             string sql = "DELETE FROM " + TABLE_NAME + " WHERE user_id = ? AND tour_id = ?";
 
-            using (OleDbConnection conn = DBConnection.getConnection())
+            try
             {
-                using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                using (OleDbConnection conn = DBConnection.getConnection())
                 {
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
-                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tourId });
+                    using (OleDbCommand stmt = new OleDbCommand(sql, conn))
+                    {
+                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = userId });
+                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = tourId });
 
-                    int rowsAffected = stmt.ExecuteNonQuery();
-                    return rowsAffected > 0;
+                        int rowsAffected = stmt.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("FavoritesDAO.removeFavorite error: " + e.Message);
+                throw new FavoritesDAOException("removeFavorite", "Error removing favorite", e);
             }
         }
 
