@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,121 +10,156 @@ namespace TourBookingSystem.Models
     /**
      * User model class with security enhancements
      */
+    [Table("users")]
     public class User
     {
-        private int userId;
-        private string fullName;
-        private string email;
-        private string password; // Marked as transient for security
-        private string phone;
-        private string role;
-        private string createdAt;
-        private string rememberToken;
-        private string tokenExpiry;
-        
-        public User() {}
-        
-        public User(int userId, string fullName, string email, string password, 
-                    string phone, string role, string createdAt)
+        [Key]
+        [Column("id")]
+        public int UserId { get; set; }
+
+        [Column("full_name")]
+        public string? FullName { get; set; }
+
+        [Column("email")]
+        public string? Email { get; set; }
+
+        [Column("password_hash")]
+        public string? PasswordHash { get; set; } // Renamed from password for clarity
+
+        [Column("phone")]
+        public string? Phone { get; set; }
+
+        [Column("role")]
+        public string Role { get; set; } = "USER";
+
+        [Column("created_at")]
+        public DateTime? CreatedAt { get; set; }
+
+        [Column("remember_token")]
+        public string? RememberToken { get; set; }
+
+        [Column("token_expiry")]
+        public DateTime? TokenExpiry { get; set; }
+
+        public User() { }
+
+        public User(int userId, string fullName, string email, string password,
+                    string phone, string role, DateTime? createdAt)
         {
-            this.userId = userId;
-            this.fullName = fullName;
-            this.email = email;
-            this.password = password;
-            this.phone = phone;
-            this.role = role;
-            this.createdAt = createdAt;
+            this.UserId = userId;
+            this.FullName = fullName;
+            this.Email = email;
+            this.PasswordHash = password;
+            this.Phone = phone;
+            this.Role = role;
+            this.CreatedAt = createdAt;
         }
-        
-        // Getters and Setters with validation
-        public int getUserId() { return userId; }
-        public void setUserId(int userId) 
-        { 
-            this.userId = userId; 
+
+        // Legacy Getters and Setters
+        public int getUserId() { return UserId; }
+        public void setUserId(int userId)
+        {
+            this.UserId = userId;
         }
-        
-        public string getFullName() { return fullName; }
-        public void setFullName(string fullName) 
-        { 
-            this.fullName = (fullName != null) ? fullName.Trim() : null; 
+
+        public string? getFullName() { return FullName; }
+        public void setFullName(string? fullName)
+        {
+            this.FullName = (fullName != null) ? fullName.Trim() : null;
         }
-        
-        public string getEmail() { return email; }
-        public void setEmail(string email) 
-        { 
-            this.email = (email != null) ? email.Trim().ToLower() : null; 
+
+        public string? getEmail() { return Email; }
+        public void setEmail(string? email)
+        {
+            this.Email = (email != null) ? email.Trim().ToLower() : null;
         }
-        
+
         // Password getter returns null for security (except for internal use)
-        public string getPassword() 
-        { 
+        public string? getPassword()
+        {
             return null; // Never return actual password in normal usage
         }
-        
+
         // Overloaded method to get password for DAO operations
-        public string getHashedPassword() 
-        { 
-            return password;
+        public string? getHashedPassword()
+        {
+            return PasswordHash;
         }
-        
-        public void setPassword(string password) 
-        { 
-            this.password = (password != null) ? password : null; 
+
+        public void setPassword(string? password)
+        {
+            this.PasswordHash = (password != null) ? password : null;
         }
-        
-        public string getPhone() { return phone; }
-        public void setPhone(string phone) 
-        { 
-            this.phone = (phone != null) ? phone.Trim() : null; 
+
+        public string? getPhone() { return Phone; }
+        public void setPhone(string? phone)
+        {
+            this.Phone = (phone != null) ? phone.Trim() : null;
         }
-        
-        public string getRole() { return role; }
-        public void setRole(string role) 
-        { 
-            this.role = (role != null) ? role.Trim() : "USER"; 
+
+        public string getRole() { return Role; }
+        public void setRole(string? role)
+        {
+            this.Role = (role != null) ? role.Trim() : "USER";
         }
-        
-        public string getCreatedAt() { return createdAt; }
-        public void setCreatedAt(string createdAt) 
-        { 
-            this.createdAt = createdAt; 
+
+        public string? getCreatedAt() { return CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss"); }
+        public void setCreatedAt(string? createdAt)
+        {
+            if (DateTime.TryParse(createdAt, out DateTime dt))
+                this.CreatedAt = dt;
+            else
+                this.CreatedAt = null;
         }
-        
-        public string getRememberToken() { return rememberToken; }
-        public void setRememberToken(string rememberToken) 
-        { 
-            this.rememberToken = rememberToken; 
+
+        public void setCreatedAt(DateTime? createdAt)
+        {
+            this.CreatedAt = createdAt;
         }
-        
-        public string getTokenExpiry() { return tokenExpiry; }
-        public void setTokenExpiry(string tokenExpiry) 
-        { 
-            this.tokenExpiry = tokenExpiry; 
+
+        public string? getRememberToken() { return RememberToken; }
+        public void setRememberToken(string? rememberToken)
+        {
+            this.RememberToken = rememberToken;
         }
-        
+
+        public string? getTokenExpiry() { return TokenExpiry?.ToString("yyyy-MM-dd HH:mm:ss"); }
+        public void setTokenExpiry(string? tokenExpiry)
+        {
+            if (DateTime.TryParse(tokenExpiry, out DateTime dt))
+                this.TokenExpiry = dt;
+            else
+                this.TokenExpiry = null;
+        }
+
+        public void setTokenExpiry(DateTime? tokenExpiry)
+        {
+            this.TokenExpiry = tokenExpiry;
+        }
+
         public override bool Equals(object? o)
         {
             if (this == o) return true;
             if (o == null || GetType() != o.GetType()) return false;
             User user = (User)o;
-            return userId == user.userId && 
-                   email == user.email;
+            return UserId == user.UserId &&
+                   Email == user.Email;
         }
-        
+
         public override int GetHashCode()
         {
-            return HashCode.Combine(userId, email);
+            return HashCode.Combine(UserId, Email);
         }
-        
+
         public override string ToString()
         {
             return "User{" +
-                    "userId=" + userId +
-                    ", fullName='" + fullName + '\'' +
-                    ", email='" + email + '\'' +
-                    ", phone='" + phone + '\'' +
-                    ", role='" + role + '\'' +
-                    ", createdAt='" + createdAt + '\'' +
+                    "userId=" + UserId +
+                    ", fullName='" + FullName + '\'' +
+                    ", email='" + Email + '\'' +
+                    ", phone='" + Phone + '\'' +
+                    ", role='" + Role + '\'' +
+                    ", createdAt='" + CreatedAt + '\'' +
                     '}';
         }
     }

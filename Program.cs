@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TourBookingSystem.Utils;
+using TourBookingSystem.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +19,15 @@ builder.Services.AddSession(options =>
 
 // Initialize database connection path
 var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "Database", "tour_booking.accdb");
+string connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
 DBConnection.init(dbPath);
+
+// Ensure Dual table exists for Jet provider
+DatabaseInitializer.Initialize(connectionString);
+
+// Register ApplicationDbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseJetOleDb(connectionString));
 
 var app = builder.Build();
 

@@ -1,23 +1,25 @@
+@using TourBookingSystem.Models
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Tất cả tour";
-    var tours = ViewData["tours"] as List<TourBookingSystem.Models.Tour>;
+    ViewData["Title"] = "Tất cả Tour Du Lịch";
+    var tours = ViewData["tours"] as List<Tour>;
     var destinations = ViewData["destinations"] as List<string>;
-    
-    // Get filter values for restoration
-    var keyword = ViewData["searchKeyword"] as string;
-    var selectedDest = ViewData["selectedDestination"] as string;
-    var depDate = ViewData["departureDate"] as string;
-    var sortBy = ViewData["selectedSortBy"] as string;
-    var minPrice = ViewData["minPrice"];
-    var maxPrice = ViewData["maxPrice"];
-    var duration = ViewData["duration"];
+    var selectedDestination = ViewData["selectedDestination"] as string;
+    var searchKeyword = ViewData["searchKeyword"] as string;
+    var departureDate = ViewData["departureDate"] as string;
+    var selectedMinPrice = ViewData["minPrice"] as decimal?;
+    var selectedMaxPrice = ViewData["maxPrice"] as decimal?;
+    var selectedDuration = ViewData["duration"] as int?;
+    var selectedSortOf = ViewData["selectedSortBy"] as string;
 }
-
-<div class="tourlist-banner">
+@section Styles {
+    <link rel="stylesheet" href="~/css/tour_list.css">
+}
+<!-- Page Header -->
+<section class="page-header">
     <div class="container">
-        <h1>Danh sách Tour Du Lịch</h1>
-        <p>Tìm thấy @(tours?.Count ?? 0) hành trình phù hợp với bạn</p>
+        <h1>Khám Phá Các Tour Du Lịch</h1>
+        <p class="lead">Hành trình tuyệt vời chờ đợi bạn</p>
     </div>
 </div>
 

@@ -4,16 +4,19 @@ using System;
 using System.Collections.Generic;
 using TourBookingSystem.Models;
 using TourBookingSystem.DAOs;
+using TourBookingSystem.Database;
 
 namespace TourBookingSystem.Controllers
 {
     public class FavoritesController : Controller
     {
-        private FavoritesDAO favoritesDAO;
+        private readonly FavoritesDAO favoritesDAO;
+        private readonly ApplicationDbContext _context;
 
-        public FavoritesController()
+        public FavoritesController(ApplicationDbContext context)
         {
-            favoritesDAO = new FavoritesDAO();
+            _context = context;
+            favoritesDAO = new FavoritesDAO(_context);
         }
 
         [HttpGet]
