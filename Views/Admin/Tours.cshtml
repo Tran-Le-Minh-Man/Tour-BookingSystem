@@ -37,11 +37,11 @@
         <table class="premium-table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th class="text-center">ID</th>
                     <th>Tour</th>
-                    <th>Địa điểm</th>
-                    <th>Giá</th>
-                    <th>Trạng thái</th>
+                    <th class="text-center">Địa điểm</th>
+                    <th class="text-center">Giá</th>
+                    <th class="text-center">Trạng thái</th>
                     <th class="text-right">Thao tác</th>
                 </tr>
             </thead>
@@ -51,7 +51,7 @@
                     foreach (var tour in tours)
                     {
                         <tr>
-                            <td><span class="text-muted">#@tour.getTourId()</span></td>
+                            <td class="text-center"><span class="text-muted">#@tour.getTourId()</span></td>
                             <td>
                                 <div class="tour-info-cell">
                                     <img src="@tour.getSafeImageUrl()" alt="@tour.getName()" class="tour-premium-thumb">
@@ -60,18 +60,26 @@
                                     </div>
                                 </div>
                             </td>
-                            <td><i class="fas fa-map-marker-alt text-danger"></i> @tour.getDestination()</td>
-                            <td class="text-primary font-weight-bold">@tour.getFormattedPrice()</td>
-                            <td>
-                                <span class="badge badge-@(tour.getStatus().ToLower() == "active" ? "success" : "secondary")">
-                                    @(tour.getStatus() == "ACTIVE" ? "Hoạt động" : "Ẩn")
-                                </span>
+                            <td class="text-center" style="text-align: center !important;"><i class="fas fa-map-marker-alt text-danger"></i> @tour.getDestination()</td>
+                            <td class="text-center text-primary font-weight-bold" style="text-align: center !important;">@tour.getFormattedPrice()</td>
+                            <td class="text-center" style="text-align: center !important;">
+                                @{
+                                    var statusLabel = (tour.getStatus()?.Trim() ?? "ACTIVE").ToUpper();
+                                    var isTourActive = statusLabel == "ACTIVE";
+                                    var statusText = isTourActive ? "Hoạt động" : "Ẩn";
+                                    var textColor = isTourActive ? "#166534" : "#475569";
+                                }
+                                <strong style="color: @textColor; display: block;">@statusText</strong>
                             </td>
                             <td class="text-right">
-                                <button class="btn-icon @(tour.getStatus() == "ACTIVE" ? "btn-disable" : "btn-enable")" 
-                                        title="@(tour.getStatus() == "ACTIVE" ? "Vô hiệu hóa" : "Kích hoạt")" 
-                                        onclick="updateStatus(@tour.getTourId(), '@(tour.getStatus() == "ACTIVE" ? "INACTIVE" : "ACTIVE")')">
-                                    <i class="fas @(tour.getStatus() == "ACTIVE" ? "fa-eye-slash" : "fa-eye")"></i>
+                                @{
+                                    var currentStatus = (tour.getStatus()?.Trim() ?? "ACTIVE").ToUpper();
+                                    var isActive = currentStatus == "ACTIVE";
+                                }
+                                <button class="btn-icon @(isActive ? "btn-disable" : "btn-enable")" 
+                                        title="@(isActive ? "Vô hiệu hóa" : "Kích hoạt")" 
+                                        onclick="updateStatus(@tour.getTourId(), '@(isActive ? "INACTIVE" : "ACTIVE")')">
+                                    <i class="fas @(isActive ? "fa-eye-slash" : "fa-eye")"></i>
                                 </button>
                                 <button class="btn-icon btn-delete" title="Xóa tour" onclick="deleteTour(@tour.getTourId())">
                                     <i class="fas fa-trash-alt"></i>
@@ -210,6 +218,7 @@
 
     .text-muted { color: #858796; }
     .text-right { text-align: right; }
+    .text-center { text-align: center; }
     .text-primary { color: #4e73df; }
     .font-weight-bold { font-weight: 700; }
 

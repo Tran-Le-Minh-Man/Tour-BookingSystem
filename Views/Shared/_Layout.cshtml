@@ -29,13 +29,13 @@
     <header class="navbar sticky-header">
         <div class="container nav-content">
             <div class="nav-brand">
-                <a href="@Url.Action("Index", "Home")">
+                <a href="@("ADMIN".Equals(role, StringComparison.OrdinalIgnoreCase) ? Url.Action("Index", "Admin") : Url.Action("Index", "Home"))">
                     <span class="logo-accent">Việt Nam</span> Travel
                 </a>
             </div>
             <nav class="nav-menu">
                 <ul>
-                    @if (!isAdminArea)
+                    @if (!isAdminArea && !"ADMIN".Equals(role, StringComparison.OrdinalIgnoreCase))
                     {
                         <li>
                             <a href="@Url.Action("Index", "Home")" class="@(currentUrl.Value == "/" || currentUrl.Value == "/Home" || currentUrl.Value == "/Home/Index" ? "active" : "")">

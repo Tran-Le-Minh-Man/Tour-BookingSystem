@@ -71,28 +71,36 @@
             <table class="premium-table">
                 <thead>
                     <tr>
-                        <th>Mã</th>
+                        <th class="text-center">Mã</th>
                         <th>Khách hàng</th>
                         <th>Tour</th>
-                        <th>Ngày đặt</th>
-                        <th>Trạng thái</th>
-                        <th>Tổng tiền</th>
+                        <th class="text-center">Ngày đặt</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center">Tổng tiền</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var booking in recentBookings)
                     {
                         <tr>
-                            <td><strong>#@booking.getBookingId()</strong></td>
+                            <td class="text-center" style="text-align: center !important;"><strong>#@booking.getBookingId()</strong></td>
                             <td>@booking.getUserName()</td>
                             <td>@booking.getTourName()</td>
-                            <td>@booking.getFormattedDate()</td>
-                            <td>
-                                <span class="badge badge-@booking.getStatus().ToLower()">
-                                    @booking.getFormattedStatus()
-                                </span>
+                            <td class="text-center" style="text-align: center !important;">@booking.getFormattedDate()</td>
+                            <td class="text-center" style="text-align: center !important;">
+                                @{
+                                    var currentStatus = (booking.getStatus()?.Trim() ?? "PENDING").ToUpper();
+                                    var statusLabel = booking.getFormattedStatus();
+                                    var statusColor = "#4e73df"; // Default blue
+                                    
+                                    if (currentStatus == "CONFIRMED") statusColor = "#166534"; // Green
+                                    else if (currentStatus == "CANCELLED") statusColor = "#991b1b"; // Red
+                                    else if (currentStatus == "PENDING") statusColor = "#856404"; // Yellow
+                                    else if (currentStatus == "COMPLETED") statusColor = "#0c5460"; // Teal
+                                }
+                                <strong style="color: @statusColor; display: block;">@statusLabel</strong>
                             </td>
-                            <td class="text-primary font-weight-bold">@booking.getFormattedPrice()</td>
+                            <td class="text-center text-primary font-weight-bold" style="text-align: center !important;">@booking.getFormattedPrice()</td>
                         </tr>
                     }
                 </tbody>
@@ -211,6 +219,7 @@
         overflow-x: auto;
     }
 
+    .text-center { text-align: center; }
     .text-primary { color: #4e73df !important; }
     .font-weight-bold { font-weight: 700 !important; }
 </style>

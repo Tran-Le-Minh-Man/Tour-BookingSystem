@@ -70,6 +70,11 @@
                     <div class="tour-image">
                         <img src="@tour.getSafeImageUrl()" alt="@tour.getName()" onerror="this.src='/images/danang.jpg'">
                         <div class="tour-badge">Nổi bật</div>
+                        @{
+                            var statusText = (tour.getStatus() ?? "ACTIVE").ToUpper() == "ACTIVE" ? "Hoạt động" : "Ẩn";
+                            var statusClass = (tour.getStatus() ?? "ACTIVE").ToUpper() == "ACTIVE" ? "status-active" : "status-inactive";
+                        }
+                        <div class="tour-status-badge @statusClass">@statusText</div>
                     </div>
                     <div class="tour-info">
                         <div class="tour-meta">
@@ -276,6 +281,18 @@
         font-weight: 700;
         text-transform: uppercase;
     }
+    
+    .tour-status-badge {
+        position: absolute;
+        top: 20px; right: 20px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .tour-status-badge.status-active { background: #dcfce7; color: #166534; }
+    .tour-status-badge.status-inactive { background: #fee2e2; color: #991b1b; }
 
     .tour-info { padding: 25px; }
 

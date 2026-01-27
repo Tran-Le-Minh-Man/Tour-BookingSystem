@@ -39,12 +39,12 @@
         <table class="premium-table">
             <thead>
                 <tr>
-                    <th>Mã đơn</th>
+                    <th class="text-center">Mã đơn</th>
                     <th>Khách hàng</th>
                     <th>Tour</th>
-                    <th>Ngày đặt</th>
-                    <th>Tổng tiền</th>
-                    <th>Trạng thái</th>
+                    <th class="text-center">Ngày đặt</th>
+                    <th class="text-center">Tổng tiền</th>
+                    <th class="text-center">Trạng thái</th>
                     <th class="text-right">Thao tác</th>
                 </tr>
             </thead>
@@ -54,7 +54,7 @@
                     foreach (var booking in bookings)
                     {
                         <tr>
-                            <td><span class="text-muted font-weight-bold">#@booking.getBookingId()</span></td>
+                            <td class="text-center" style="text-align: center !important;"><span class="text-muted font-weight-bold">#@booking.getBookingId()</span></td>
                             <td>
                                 <div class="user-info-cell">
                                     <div class="user-details">
@@ -69,12 +69,20 @@
                                     <div class="user-sub">@booking.getTourDestination()</div>
                                 </div>
                             </td>
-                            <td>@booking.getFormattedDate()</td>
-                            <td class="text-primary font-weight-bold">@booking.getFormattedPrice()</td>
-                            <td>
-                                <span class="badge badge-@booking.getStatus().ToLower()">
-                                    @booking.getFormattedStatus()
-                                </span>
+                            <td class="text-center" style="text-align: center !important;">@booking.getFormattedDate()</td>
+                            <td class="text-center text-primary font-weight-bold" style="text-align: center !important;">@booking.getFormattedPrice()</td>
+                            <td class="text-center" style="text-align: center !important;">
+                                @{
+                                    var currentStatus = (booking.getStatus()?.Trim() ?? "PENDING").ToUpper();
+                                    var statusText = booking.getFormattedStatus();
+                                    var statusColor = "#4e73df"; // Default blue
+                                    
+                                    if (currentStatus == "CONFIRMED") statusColor = "#166534"; // Green
+                                    else if (currentStatus == "CANCELLED") statusColor = "#991b1b"; // Red
+                                    else if (currentStatus == "PENDING") statusColor = "#856404"; // Yellow
+                                    else if (currentStatus == "COMPLETED") statusColor = "#0c5460"; // Teal
+                                }
+                                <strong style="color: @statusColor; display: block;">@statusText</strong>
                             </td>
                             <td class="text-right actions-column">
                                 <div class="btn-group-premium">
@@ -216,6 +224,7 @@
 
     .text-muted { color: #858796; }
     .text-right { text-align: right; }
+    .text-center { text-align: center; }
     .text-primary { color: #4e73df; }
     .font-weight-bold { font-weight: 700; }
 

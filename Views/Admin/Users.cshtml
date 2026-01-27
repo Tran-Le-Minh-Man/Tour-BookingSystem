@@ -35,12 +35,12 @@
         <table class="premium-table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th class="text-center">ID</th>
                     <th>Họ tên</th>
-                    <th>Email</th>
-                    <th>Vai trò</th>
-                    <th>Ngày tạo</th>
-                    <th class="text-right">Thao tác</th>
+                    <th class="text-center">Email</th>
+                    <th class="text-center">Vai trò</th>
+                    <th class="text-center">Ngày tạo</th>
+                    <th class="text-center">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,7 +49,7 @@
                     foreach (var user in users)
                     {
                         <tr>
-                            <td><span class="text-muted">#@user.getUserId()</span></td>
+                            <td class="text-center"><span class="text-muted">#@user.getUserId()</span></td>
                             <td>
                                 <div class="user-info-cell">
                                     <div class="user-avatar">@user.getFullName().Substring(0, 1).ToUpper()</div>
@@ -59,8 +59,8 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>@user.getEmail()</td>
-                            <td>
+                            <td class="text-center">@user.getEmail()</td>
+                            <td class="text-center">
                                 <select class="role-select badge-select @(user.getRole().ToLower())" 
                                         onchange="updateRole(@user.getUserId(), this.value)" 
                                         @(user.getUserId() == currentUserId ? "disabled" : "")>
@@ -68,8 +68,8 @@
                                     <option value="ADMIN" @(user.getRole() == "ADMIN" ? "selected" : "")>ADMIN</option>
                                 </select>
                             </td>
-                            <td>@user.getCreatedAt()</td>
-                            <td class="text-right">
+                            <td class="text-center">@user.getCreatedAt()</td>
+                            <td class="text-center">
                                 @if (user.getUserId() != currentUserId)
                                 {
                                     <button class="btn-icon btn-delete" title="Xóa người dùng" onclick="deleteUser(@user.getUserId())">
@@ -216,6 +216,7 @@
 
     .text-muted { color: #858796; }
     .text-right { text-align: right; }
+    .text-center { text-align: center; }
 
     .no-data {
         text-align: center;
