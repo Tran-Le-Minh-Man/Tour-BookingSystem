@@ -127,7 +127,7 @@ namespace TourBookingSystem.DAOs
         public List<Tour> searchTours(string keyword)
         {
             string sql = "SELECT * FROM " + TABLE_NAME +
-                         " WHERE name LIKE ? OR destination LIKE ? " +
+                         " WHERE name LIKE ? OR description LIKE ? OR destination LIKE ? " +
                          "ORDER BY id DESC";
             List<Tour> tours = new List<Tour>();
 
@@ -136,6 +136,7 @@ namespace TourBookingSystem.DAOs
                 using (OleDbCommand stmt = new OleDbCommand(sql, conn))
                 {
                     string searchPattern = "%" + keyword + "%";
+                    stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
                     stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
                     stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
 
@@ -334,8 +335,9 @@ namespace TourBookingSystem.DAOs
             // Filter by keyword (search in name and description)
             if (!string.IsNullOrEmpty(keyword) && !keyword.Trim().Equals(""))
             {
-                conditions.Add("(name LIKE ? OR description LIKE ?)");
+                conditions.Add("(name LIKE ? OR description LIKE ? OR destination LIKE ?)");
                 string searchPattern = "%" + keyword.Trim() + "%";
+                parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
                 parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
                 parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = searchPattern });
             }

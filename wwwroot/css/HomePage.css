@@ -201,7 +201,6 @@ body {
 }
 
     .tour-card:hover {
-        transform: translateY(-10px);
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
     }
 
@@ -248,7 +247,6 @@ body {
 
     .btn:hover {
         background: #005a8c;
-        transform: translateY(-2px);
     }
 
 .btn-large {
@@ -419,7 +417,6 @@ body {
 
     .feature-item:hover {
         background: #e6f3ff;
-        transform: translateY(-5px);
     }
 
     .feature-item .icon {

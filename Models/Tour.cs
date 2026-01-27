@@ -107,6 +107,27 @@ namespace TourBookingSystem.Models
             return String.Format("{0:N0}đ", price);
         }
         
+        public string getSafeImageUrl()
+        {
+            if (string.IsNullOrEmpty(imageUrl))
+            {
+                return "https://images.unsplash.com/photo-1502602898657-3e917247a183?q=80&w=2070&auto=format&fit=crop";
+            }
+            
+            // If it's a full URL or a relative path starting with / or ~/ or images/
+            if (imageUrl.StartsWith("http") || imageUrl.StartsWith("/") || imageUrl.StartsWith("~/") || imageUrl.ToLower().Contains("images/"))
+            {
+                // If it's relative but doesn't start with /, prepend it (except if encoded/etc)
+                if (!imageUrl.StartsWith("http") && !imageUrl.StartsWith("/") && !imageUrl.StartsWith("~/"))
+                {
+                    return "/" + imageUrl;
+                }
+                return imageUrl;
+            }
+
+            return "https://images.unsplash.com/photo-1502602898657-3e917247a183?q=80&w=2070&auto=format&fit=crop";
+        }
+
         public string getFormattedDepartureDate()
         {
             if (departureDate == null) return "";

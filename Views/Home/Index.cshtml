@@ -2,175 +2,374 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Trang chủ";
     var featuredTours = ViewData["featuredTours"] as List<TourBookingSystem.Models.Tour>;
+    var destinations = ViewData["destinations"] as List<string>;
 }
+
 <!-- Hero Section -->
-<section class="hero">
+<section class="hero-section">
     <div class="hero-overlay"></div>
-    <div class="container">
-        <div class="hero-content">
-            <h1>Khám Phá Biển Đảo Việt Nam</h1>
-            <p class="lead">Hành trình tuyệt vời cùng nắng vàng, biển xanh và cát trắng</p>
+    <div class="container hero-content">
+        <h1>Khám phá Việt Nam theo cách của bạn</h1>
+        <p>Hàng trăm tour du lịch hấp dẫn đang chờ đón bạn.</p>
+        
+        <div class="hero-search-card">
             <form action="@Url.Action("TourList", "Home")" method="get" class="search-form">
-                <div class="input-group">
-                    <input type="text" name="keyword" placeholder="Đi đâu? (Phú Quốc, Nha Trang...)">
-                    <input type="date" name="date">
-                    <button type="submit">
-                        <i class="fas fa-search"></i> Tìm Tour
-                    </button>
+                <div class="search-field">
+                    <label><i class="fas fa-search"></i> Bạn muốn đi đâu?</label>
+                    <input type="text" name="keyword" placeholder="Ví dụ: Hạ Long, Đà Lạt...">
                 </div>
+                <div class="search-field">
+                    <label><i class="fas fa-map-marker-alt"></i> Địa điểm</label>
+                    <select name="destination">
+                        <option value="">Tất cả địa điểm</option>
+                        @if (destinations != null) {
+                            foreach (var dest in destinations) {
+                                <option value="@dest">@dest</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn-search">Tìm kiếm</button>
             </form>
         </div>
     </div>
 </section>
-<!-- ================== PHẦN 1: TOUR NỔI BẬT ================== -->
-<section class="featured-tours">
-    <div class="container">
-        <h2 class="section-title">Tour Nổi Bật</h2>
-        <div class="tours-grid">
-            @if (featuredTours != null && featuredTours.Any())
+
+<!-- Features Section -->
+<section class="features-section container">
+    <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-globe-asia"></i></div>
+        <h3>Điểm đến đa dạng</h3>
+        <p>Từ vùng núi phía Bắc đến những bãi biển miền Nam.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-tags"></i></div>
+        <h3>Giá cả cạnh tranh</h3>
+        <p>Cam kết mang đến chất lượng tốt nhất với giá hợp lý.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-headset"></i></div>
+        <h3>Hỗ trợ 24/7</h3>
+        <p>Đội ngũ tư vấn viên nhiệt tình luôn sẵn sàng hỗ trợ.</p>
+    </div>
+</section>
+
+<!-- Featured Tours Section -->
+<section class="featured-section container">
+    <div class="section-header">
+        <h2><span class="text-indigo">Tour nổi bật</span> trong tháng</h2>
+        <p>Những hành trình được yêu thích nhất bởi du khách trong tháng này.</p>
+    </div>
+
+    <div class="tour-grid">
+        @if (featuredTours != null && featuredTours.Count > 0)
+        {
+            foreach (var tour in featuredTours)
             {
-                foreach (var tour in featuredTours)
-                {
-                    <div class="tour-card">
-                        <div class="tour-image">
-                            <img src="@tour.getImageUrl()" alt="@tour.getName()">
+                <div class="tour-card">
+                    <div class="tour-image">
+                        <img src="@tour.getSafeImageUrl()" alt="@tour.getName()" onerror="this.src='/images/danang.jpg'">
+                        <div class="tour-badge">Nổi bật</div>
+                    </div>
+                    <div class="tour-info">
+                        <div class="tour-meta">
+                            <span class="tour-dest"><i class="fas fa-map-marker-alt"></i> @tour.getDestination()</span>
+                            <span class="tour-duration"><i class="far fa-clock"></i> @tour.getDuration() ngày</span>
                         </div>
-                        <div class="tour-info">
-                            <h3>@tour.getName()</h3>
-                            <p class="duration">
-                                <i class="fas fa-clock"></i> @tour.getDuration() ngày
-                            </p>
-                            <p class="price">@tour.getFormattedPrice()</p>
-                            <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })" class="btn">Xem chi tiết</a>
+                        <h3 class="tour-title">@tour.getName()</h3>
+                        <div class="tour-footer">
+                            <div class="tour-price">
+                                <span>Giá từ</span>
+                                <strong>@tour.getFormattedPrice()</strong>
+                            </div>
+                            <a href="@Url.Action("TourDetail", "Home", new { id = tour.getTourId() })" class="btn-details">Chi tiết</a>
                         </div>
                     </div>
-                }
+                </div>
             }
-            else
-            {
-                <p class="text-center">Hiện không có tour nổi bật nào.</p>
-            }
-        </div>
-        <div class="center">
-            <a href="@Url.Action("TourList", "Home")" class="btn btn-large">Xem tất cả tour</a>
-        </div>
+        }
+    </div>
+
+    <div class="text-center mt-50">
+        <a href="@Url.Action("TourList", "Home")" class="btn-outline-indigo">Xem tất cả tour <i class="fas fa-chevron-right ml-10"></i></a>
     </div>
 </section>
-<!-- ================== PHẦN 2: KHUYẾN MÃI NỔI BẬT ================== -->
-<section class="promo">
-    <div class="container">
-        <h2 class="section-title text-center">
-            Khuyến Mãi <span class="highlight">Hot</span> Trong Tuần
-        </h2>
-        <div class="promo-grid">
-            <div class="promo-card">
-                <div class="badge">GIẢM 20%</div>
-                <img src="~/Images/KMNhaTrang.png" alt="Nha Trang">
-                <div class="promo-info">
-                    <h3>Nha Trang 4N3Đ - Vinpearl + Lặn biển</h3>
-                    <p class="old-price">8.500.000đ</p>
-                    <p class="new-price">6.800.000đ</p>
-                    <p class="countdown">
-                        <i class="fas fa-clock"></i> Còn 2 ngày
-                    </p>
-                    <a href="@Url.Action("TourList", "Home")" class="btn">Đặt ngay</a>
-                </div>
-            </div>
-            <div class="promo-card">
-                <div class="badge">CÒN 3 CHỖ</div>
-                <img src="~/Images/KMPhuQuoc.jpg" alt="Phú Quốc">
-                <div class="promo-info">
-                    <h3>Phú Quốc Bay Thẳng - Resort 5*</h3>
-                    <p class="old-price">12.900.000đ</p>
-                    <p class="new-price">11.900.000đ</p>
-                    <p class="countdown text-danger">
-                        <i class="fas fa-exclamation-triangle"></i> Sắp hết chỗ!
-                    </p>
-                    <a href="@Url.Action("TourList", "Home")" class="btn">Đặt ngay</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- ================== PHẦN 3: ĐÁNH GIÁ KHÁCH HÀNG ================== -->
-<section class="testimonials">
-    <div class="container">
-        <h2 class="section-title text-center">Khách Hàng Nói Gì?</h2>
-        <div class="testimonials-grid">
-            <div class="testimonial-card">
-                <div class="stars">
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                </div>
-                <p class="quote">"Tour Phú Quốc quá tuyệt! Biển đẹp, ăn ngon, hướng dẫn viên vui tính. Sẽ đi tiếp!"</p>
-                <div class="author">
-                    <img src="~/Images/avatar1.jpg" alt="Nguyễn Lan">
-                    <div>
-                        <strong>Nguyễn Lan</strong><br> <small>Đi tour tháng 10/2025</small>
-                    </div>
-                </div>
-            </div>
-            <div class="testimonial-card">
-                <div class="stars">
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                </div>
-                <p class="quote">"Dịch vụ chuyên nghiệp, xe đưa đón đúng giờ. Rất hài lòng!"</p>
-                <div class="author">
-                    <img src="~/Images/avatar2.png" alt="Trần Minh">
-                    <div>
-                        <strong>Trần Minh</strong><br> <small>Đi tour Nha Trang</small>
-                    </div>
-                </div>
-            </div>
-            <div class="testimonial-card">
-                <div class="stars">
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
-                </div>
-                <p class="quote">"Ổn, nhưng nên cải thiện thời gian ăn trưa. Còn lại tốt!"</p>
-                <div class="author">
-                    <img src="~/Images/avatar3.png" alt="Lê Hương">
-                    <div>
-                        <strong>Lê Hương</strong><br> <small>Đi tour Đà Nẵng</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- ================== PHẦN 4: TẠI SAO CHỌN CHÚNG TÔI ================== -->
-<section class="why-choose py-5">
-    <div class="container">
-        <h2 class="section-title text-center">
-            Tại Sao Chọn <span class="highlight">Việt Nam Travel</span>?
-        </h2>
-        <div class="features-grid">
-            <div class="feature-item">
-                <div class="icon">
-                    <i class="fas fa-dollar-sign"></i>
-                </div>
-                <h3>Giá Tốt Nhất</h3>
-                <p>Cam kết giá cạnh tranh, không phí ẩn. So sánh để thấy sự khác biệt!</p>
-            </div>
-            <div class="feature-item">
-                <div class="icon">
-                    <i class="fas fa-headset"></i>
-                </div>
-                <h3>Hỗ Trợ 24/7</h3>
-                <p>Tư vấn miễn phí trước, trong và sau chuyến đi. Luôn sẵn sàng!</p>
-            </div>
-            <div class="feature-item">
-                <div class="icon">
-                    <i class="fas fa-user-tie"></i>
-                </div>
-                <h3>Hướng Dẫn Viên Chuyên Nghiệp</h3>
-                <p>Đội ngũ HDV giàu kinh nghiệm, nhiệt tình, am hiểu địa phương.</p>
-            </div>
-            <div class="feature-item">
-                <div class="icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <h3>Đảm Bảo Hoàn Tiền</h3>
-                <p>Hủy tour trước 48h → hoàn 100%. An tâm đặt chỗ!</p>
-            </div>
-        </div>
-    </div>
-</section>
+
+<style>
+    /* Hero Styles */
+    .hero-section {
+        position: relative;
+        height: 60vh;
+        min-height: 400px;
+        background-image: url('https://images.unsplash.com/photo-1528127269322-539801943d91?q=80&w=2070&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: center;
+        color: white;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+    }
+
+    .hero-content h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+    }
+
+    .hero-content p {
+        font-size: 1.1rem;
+        margin-bottom: 40px;
+    }
+
+    .hero-search-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        max-width: 850px;
+        margin: 0 auto;
+    }
+
+    .search-form {
+        display: flex;
+        align-items: center;
+    }
+
+    .search-field {
+        flex: 1;
+        padding: 0 25px;
+        text-align: left;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .search-field:last-of-type { border-right: none; }
+
+    .search-field label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+
+    .search-field input, .search-field select {
+        width: 100%;
+        border: none;
+        outline: none;
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 1rem;
+        background: transparent;
+    }
+
+    .btn-search {
+        background: #4361ee;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 100px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .btn-search:hover { background: #3f37c9; }
+
+    /* Features */
+    .features-section {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        margin-top: -60px;
+        position: relative;
+        z-index: 20;
+    }
+
+    .feature-card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+        color: #4361ee;
+        margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+        margin-bottom: 15px;
+        color: #1e293b;
+    }
+
+    .feature-card p {
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    /* Featured Section */
+    .featured-section { padding: 80px 0; }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .section-header h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 15px;
+    }
+
+    .section-header p {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+
+    .text-indigo { color: #4361ee; }
+
+    .tour-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 30px;
+    }
+
+    .tour-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .tour-image {
+        position: relative;
+        height: 230px;
+    }
+
+    .tour-image img {
+        width: 100%; height: 100%; object-fit: cover;
+    }
+
+    .tour-badge {
+        position: absolute;
+        top: 20px; left: 20px;
+        background: #4361ee;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .tour-info { padding: 25px; }
+
+    .tour-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #64748b;
+    }
+
+    .tour-dest i { color: #ef4444; margin-right: 5px; }
+
+    .tour-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 20px;
+        height: 3rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .tour-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding-top: 20px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .tour-price span {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .tour-price strong {
+        font-size: 1.25rem;
+        color: #ef4444;
+        font-weight: 800;
+    }
+
+    .btn-details {
+        text-decoration: none;
+        background: #f1f5f9;
+        color: #475569;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+    .btn-details:hover {
+        background: #4361ee;
+        color: white;
+    }
+
+    .btn-outline-indigo {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        border: 2px solid #4361ee;
+        color: #4361ee;
+        padding: 15px 35px;
+        border-radius: 15px;
+        font-weight: 700;
+        transition: all 0.2s;
+    }
+
+    .btn-outline-indigo:hover {
+        background: #4361ee;
+        color: white;
+    }
+
+    /* Helpers */
+    .text-center { text-align: center; }
+    .mt-50 { margin-top: 50px; }
+    .ml-10 { margin-left: 10px; }
+
+    @@media (max-width: 900px) {
+        .hero-section { height: auto; padding: 100px 0; }
+        .hero-search-card { border-radius: 20px; }
+        .search-form { flex-direction: column; gap: 15px; }
+        .search-field { width: 100%; border-right: none; border-bottom: 1px solid #e2e8f0; padding: 10px 0; }
+        .btn-search { width: 100%; }
+        .features-section { grid-template-columns: 1fr; margin-top: 50px; }
+        .hero-content h1 { font-size: 2.25rem; }
+    }
+</style>

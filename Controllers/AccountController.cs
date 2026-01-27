@@ -358,6 +358,126 @@ namespace TourBookingSystem.Controllers
         }
 
         /**
+         * GET: /Account/EditProfile
+         */
+        [HttpGet]
+        public IActionResult EditProfile()
+        {
+            int? userId = HttpContext.Session.GetInt32("userId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            User user = userDAO.findById(userId.Value);
+            if (user == null)
+            {
+                return RedirectToAction("Logout");
+            }
+
+            ViewData["userId"] = userId;
+            ViewData["fullName"] = HttpContext.Session.GetString("fullName");
+            ViewData["role"] = HttpContext.Session.GetString("role");
+
+            return View(user);
+        }
+
+        /**
+         * POST: /Account/UpdateProfile
+         */
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult UpdateProfile(string fullName, string phone)
+        {
+            int? userId = HttpContext.Session.GetInt32("userId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                User user = userDAO.findById(userId.Value);
+                user.setFullName(fullName.Trim());
+                user.setPhone(phone.Trim());
+
+                bool success = userDAO.update(user);
+                if (success)
+                {
+                    HttpContext.Session.SetString("fullName", user.getFullName());
+                    TempData["success"] = "Cập nhật thông tin thành công!";
+                }
+                else
+                {
+                    TempData["error"] = "Không thể cập nhật thông tin.";
+                }
+            }
+            catch (Exception e)
+            {
+                TempData["error"] = "Lỗi: " + e.Message;
+            }
+
+            return RedirectToAction("EditProfile");
+        }
+
+        /**
+         * POST: /Account/ChangePassword
+         */
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ChangePassword(string oldPassword, string newPassword, string confirmPassword)
+        {
+            int? userId = HttpContext.Session.GetInt32("userId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                TempData["error"] = "Mật khẩu mới không khớp.";
+                return RedirectToAction("EditProfile");
+            }
+
+            if (newPassword.Length < 8)
+            {
+                TempData["error"] = "Mật khẩu mới phải có ít nhất 8 ký tự.";
+                return RedirectToAction("EditProfile");
+            }
+
+            try
+            {
+                User user = userDAO.findById(userId.Value);
+                // We need verifyLogin logic but for a specific user. 
+                // Since userDAO doesn't have verifyPassword(userId, password), 
+                // we'll use verifyLogin with the current user's email.
+                User verifiedUser = userDAO.verifyLogin(user.getEmail(), oldPassword);
+
+                if (verifiedUser == null)
+                {
+                    TempData["error"] = "Mật khẩu cũ không đúng.";
+                    return RedirectToAction("EditProfile");
+                }
+
+                bool success = userDAO.updatePassword(userId.Value, newPassword);
+                if (success)
+                {
+                    TempData["success"] = "Đổi mật khẩu thành công!";
+                }
+                else
+                {
+                    TempData["error"] = "Không thể đổi mật khẩu.";
+                }
+            }
+            catch (Exception e)
+            {
+                TempData["error"] = "Lỗi: " + e.Message;
+            }
+
+            return RedirectToAction("EditProfile");
+        }
+
+        /**
          * Create user session
          */
         private void createUserSession(User user)

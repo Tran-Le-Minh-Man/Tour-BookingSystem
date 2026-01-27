@@ -35,9 +35,10 @@ namespace TourBookingSystem.DAOs
         public List<Booking> getAllBookings()
         {
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
-                         "t.name as tour_name, t.destination as tour_destination " +
-                         "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "t.name as tour_name, t.destination as tour_destination, t.image_url as tour_image, " +
+                         "t.departure_date as tour_departure, t.duration as tour_duration, t.price as tour_price " +
+                         "FROM (" + TABLE_NAME + " b " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id) " +
                          "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "ORDER BY b.id DESC";
             List<Booking> bookings = new List<Booking>();
@@ -63,9 +64,10 @@ namespace TourBookingSystem.DAOs
         public List<Booking> searchBookings(string keyword)
         {
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
-                         "t.name as tour_name, t.destination as tour_destination " +
-                         "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "t.name as tour_name, t.destination as tour_destination, t.image_url as tour_image, " +
+                         "t.departure_date as tour_departure, t.duration as tour_duration, t.price as tour_price " +
+                         "FROM (" + TABLE_NAME + " b " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id) " +
                          "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE u.full_name LIKE ? OR u.email LIKE ? " +
                          "OR t.name LIKE ? OR t.destination LIKE ? " +
@@ -102,9 +104,10 @@ namespace TourBookingSystem.DAOs
         public List<Booking> getBookingsByStatus(string status)
         {
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
-                         "t.name as tour_name, t.destination as tour_destination " +
-                         "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "t.name as tour_name, t.destination as tour_destination, t.image_url as tour_image, " +
+                         "t.departure_date as tour_departure, t.duration as tour_duration, t.price as tour_price " +
+                         "FROM (" + TABLE_NAME + " b " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id) " +
                          "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE b.status = ? " +
                          "ORDER BY b.id DESC";
@@ -136,9 +139,10 @@ namespace TourBookingSystem.DAOs
         public List<Booking> filterBookingsByStatusAndSearch(string status, string keyword)
         {
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
-                         "t.name as tour_name, t.destination as tour_destination " +
-                         "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "t.name as tour_name, t.destination as tour_destination, t.image_url as tour_image, " +
+                         "t.departure_date as tour_departure, t.duration as tour_duration, t.price as tour_price " +
+                         "FROM (" + TABLE_NAME + " b " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id) " +
                          "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE b.status = ? " +
                          "AND (u.full_name LIKE ? OR u.email LIKE ? " +
@@ -177,9 +181,10 @@ namespace TourBookingSystem.DAOs
         public Booking findById(int id)
         {
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
-                         "t.name as tour_name, t.destination as tour_destination " +
-                         "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "t.name as tour_name, t.destination as tour_destination, t.image_url as tour_image, " +
+                         "t.departure_date as tour_departure, t.duration as tour_duration, t.price as tour_price " +
+                         "FROM (" + TABLE_NAME + " b " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id) " +
                          "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE b.id = ?";
 
@@ -210,8 +215,8 @@ namespace TourBookingSystem.DAOs
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
                          "t.name as tour_name, t.destination as tour_destination, t.image_url as tour_image, " +
                          "t.departure_date as tour_departure, t.duration as tour_duration, t.price as tour_price " +
-                         "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "FROM (" + TABLE_NAME + " b " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id) " +
                          "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE b.user_id = ? " +
                          "ORDER BY b.id DESC";
@@ -245,8 +250,8 @@ namespace TourBookingSystem.DAOs
             string sql = "SELECT b.*, u.full_name as user_name, u.email as user_email, " +
                          "t.name as tour_name, t.destination as tour_destination, t.image_url as tour_image, " +
                          "t.departure_date as tour_departure, t.duration as tour_duration, t.price as tour_price " +
-                         "FROM " + TABLE_NAME + " b " +
-                         "LEFT JOIN [users] u ON b.user_id = u.id " +
+                         "FROM (" + TABLE_NAME + " b " +
+                         "LEFT JOIN [users] u ON b.user_id = u.id) " +
                          "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                          "WHERE b.user_id = ? AND b.status = ? " +
                          "ORDER BY b.id DESC";
@@ -530,9 +535,10 @@ namespace TourBookingSystem.DAOs
             if (limit > 0)
             {
                 sql = "SELECT TOP " + limit + " b.*, u.full_name as user_name, u.email as user_email, " +
-                      "t.name as tour_name, t.destination as tour_destination " +
-                      "FROM " + TABLE_NAME + " b " +
-                      "LEFT JOIN [users] u ON b.user_id = u.id " +
+                      "t.name as tour_name, t.destination as tour_destination, t.image_url as tour_image, " +
+                      "t.departure_date as tour_departure, t.duration as tour_duration, t.price as tour_price " +
+                      "FROM (" + TABLE_NAME + " b " +
+                      "LEFT JOIN [users] u ON b.user_id = u.id) " +
                       "LEFT JOIN [tours] t ON b.tour_id = t.id " +
                       "ORDER BY b.id DESC";
             }
