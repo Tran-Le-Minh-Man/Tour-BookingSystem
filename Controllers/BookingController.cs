@@ -1,13 +1,14 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using TourBookingSystem.Models;
 using TourBookingSystem.DAOs;
 using TourBookingSystem.Database;
-using System.Text.Json;
+using TourBookingSystem.Models;
 
 namespace TourBookingSystem.Controllers
 {
@@ -16,14 +17,17 @@ namespace TourBookingSystem.Controllers
      */
     public class BookingController : Controller
     {
-        private BookingDAO bookingDAO;
-        private TourDAO tourDAO;
-        
-        public BookingController()
+        private readonly BookingDAO bookingDAO;
+        private readonly TourDAO tourDAO;
+        private readonly OrderDAO orderDAO;
+        private readonly ApplicationDbContext _context;
+
+        public BookingController(ApplicationDbContext context)
         {
-            bookingDAO = new BookingDAO();
-            tourDAO = new TourDAO();
-            orderDAO = new OrderDAO();
+            _context = context;
+            bookingDAO = new BookingDAO(_context);
+            tourDAO = new TourDAO(_context);
+            orderDAO = new OrderDAO(_context);
         }
 
         /**
@@ -55,7 +59,8 @@ namespace TourBookingSystem.Controllers
                     showUserBookings(user);
                     break;
                 case "cancel":
-                    return cancelBooking(user);
+                    cancelBooking(user);
+                    break;
                 default:
                     showUserBookings(user);
                     break;
@@ -154,7 +159,7 @@ namespace TourBookingSystem.Controllers
 
             foreach (Booking booking in bookings)
             {
-                bool paid = orderDAO.hasPaidOrder(booking.getBookingId());
+                bool paid = orderDAO.HasPaidOrder(booking.getBookingId());
                 booking.setIsPaid(paid);
                 if ("PENDING".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
                 {
@@ -290,42 +295,51 @@ namespace TourBookingSystem.Controllers
 
         //    showUserBookings(user);
         //}
-        private IActionResult cancelBooking(User user)
+        private void cancelBooking(User user)
         {
             string bookingIdStr = Request.Query["bookingId"];
 
             if (string.IsNullOrEmpty(bookingIdStr) || bookingIdStr.Trim().Equals(""))
             {
-                TempData["error"] = "Booking ID không hợp lệ";
-                return RedirectToAction("Index");
+                ViewData["error"] = "Booking ID không hợp lệ";
+                showUserBookings(user);
+                return;
             }
 
             int bookingId;
 
-            if (!int.TryParse(bookingIdStr, out bookingId))
+            try
             {
-                TempData["error"] = "Booking ID không hợp lệ";
-                return RedirectToAction("Index");
+                bookingId = int.Parse(bookingIdStr.Trim());
+            }
+            catch
+            {
+                ViewData["error"] = "Booking ID không hợp lệ";
+                showUserBookings(user);
+                return;
             }
 
             Booking booking = bookingDAO.findById(bookingId);
 
             if (booking == null)
             {
-                TempData["error"] = "Đơn không tồn tại";
-                return RedirectToAction("Index");
+                ViewData["error"] = "Đơn đặt tour không tồn tại";
+                showUserBookings(user);
+                return;
             }
 
             if (booking.getUserId() != user.getUserId())
             {
-                TempData["error"] = "Không có quyền";
-                return RedirectToAction("Index");
+                ViewData["error"] = "Bạn không có quyền hủy đơn này";
+                showUserBookings(user);
+                return;
             }
 
             if (!"PENDING".Equals(booking.getStatus(), StringComparison.OrdinalIgnoreCase))
             {
-                TempData["error"] = "Không thể hủy";
-                return RedirectToAction("Index");
+                ViewData["error"] = "Chỉ có thể hủy đơn đang chờ xác nhận";
+                showUserBookings(user);
+                return;
             }
 
             bool success = bookingDAO.cancelBooking(bookingId);

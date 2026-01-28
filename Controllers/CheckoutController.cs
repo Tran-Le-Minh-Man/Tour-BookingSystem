@@ -1,16 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TourBookingSystem.DAOs;
+using TourBookingSystem.Database;
 using TourBookingSystem.Models;
 
 namespace TourBookingSystem.Controllers
 {
+    
     public class CheckoutController : Controller
     {
-        private BookingDAO bookingDAO = new BookingDAO();
-        private OrderDAO orderDAO = new OrderDAO();
-    
-    // ================= GET =================
-    [HttpGet]
+        private readonly BookingDAO bookingDAO;
+        private readonly OrderDAO orderDAO;
+        private readonly ApplicationDbContext _context;
+        public CheckoutController(ApplicationDbContext context)
+        {
+            _context = context;
+            bookingDAO = new BookingDAO(_context);
+            orderDAO = new OrderDAO(_context);
+        }
+
+        // ================= GET =================
+        [HttpGet]
         public IActionResult Index(int bookingId)
         {
             int? userId = HttpContext.Session.GetInt32("userId");
@@ -31,7 +40,7 @@ namespace TourBookingSystem.Controllers
             if (booking == null || booking.getUserId() != userId)
                 return NotFound();
 
-            if (orderDAO.hasPaidOrder(bookingId))
+            if (orderDAO.HasPaidOrder(bookingId))
             {
                 TempData["msg"] = "Đơn này đã được thanh toán!";
                 return RedirectToAction("Index", "Booking");

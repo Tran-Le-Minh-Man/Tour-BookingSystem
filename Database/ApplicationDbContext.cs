@@ -19,6 +19,7 @@ namespace TourBookingSystem.Database
         public DbSet<User> Users { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<BookingDetail> BookingDetails { get; set; }
+        public DbSet<Order> Orders { get; set; }
 
         [Table("user_favorites")]
         public class Favorite

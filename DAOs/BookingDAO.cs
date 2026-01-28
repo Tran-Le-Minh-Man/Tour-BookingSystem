@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.OleDb;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using TourBookingSystem.Models;
 using TourBookingSystem.Database;
@@ -200,48 +200,27 @@ namespace TourBookingSystem.DAOs
         //}
         public bool updateStatus(int id, string status)
         {
-            string sql = "UPDATE " + TABLE_NAME + " SET [status] = ? WHERE [id] = ?";
-
-            using (OleDbConnection conn = DBConnection.getConnection())
+            try
             {
-                try
+                var booking = _context.Bookings.FirstOrDefault(b => b.BookingId == id);
+                if (booking != null)
                 {
-                    using (OleDbCommand stmt = new OleDbCommand(sql, conn))
-                    {
-                        Debug.WriteLine("[updateStatus] Running SQL: " + sql);
-
-                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.VarWChar) { Value = status.ToUpper() });
-                        stmt.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = id });
-
-                        int rows = stmt.ExecuteNonQuery();
-                        Debug.WriteLine("[updateStatus] Rows affected: " + rows);
-
-                        return rows > 0;
-                    }
+                    booking.Status = status.ToUpper();
+                    return _context.SaveChanges() > 0;
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("[updateStatus ERROR] " + ex.Message);
-                    return false;
-                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error updating booking status: " + ex.Message);
+                return false;
             }
         }
 
         /**
          * Confirm a booking
          */
-        public bool confirmBooking(int id)
-        {
-            return updateStatus(id, "CONFIRMED");
-        }
-
-        /**
-         * Cancel a booking
-         */
-        public bool cancelBooking(int id)
-        {
-            return updateStatus(id, "CANCELLED");
-        }
+       
 
         public bool confirmBooking(int id) => updateStatus(id, "CONFIRMED");
         public bool cancelBooking(int id) => updateStatus(id, "CANCELLED");
